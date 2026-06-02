@@ -1,0 +1,29 @@
+{
+  "version": "1.0",
+  "description": "数字逻辑电路仿真系统 — 器件库索引",
+  "files": {
+    "gates": "gates.json",
+    "flip_flops": "flip_flops.json",
+    "chips": "chips.json"
+  },
+  "categories": {
+    "gate": "基本门电路",
+    "flip_flop": "触发器与锁存器",
+    "chip": "PDF教学芯片（74系列）"
+  },
+  "families": {
+    "basic": "基本门电路",
+    "latch": "锁存器",
+    "sync": "同步触发器",
+    "master_slave": "主从触发器",
+    "edge": "边沿触发器",
+    "74": "74系列标准",
+    "74LS": "74LS系列低功耗肖特基"
+  },
+  "device_count": {
+    "gates": 7,
+    "flip_flops": 14,
+    "chips": 18
+  },
+  "total_devices": 39
+}

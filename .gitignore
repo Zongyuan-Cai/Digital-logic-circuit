@@ -1,0 +1,21 @@
+# Build output
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+*.whl
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude
+.claude/

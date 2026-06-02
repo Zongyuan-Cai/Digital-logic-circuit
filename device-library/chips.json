@@ -1,0 +1,484 @@
+[
+  {
+    "type": "74LS148",
+    "aliases": ["74148"],
+    "name": "74LS148 8-3线优先编码器",
+    "category": "chip",
+    "family": "74LS",
+    "description": "8线-3线优先编码器，输入/输出均为低有效。I7优先级最高。含使能端EI、扩展输出EO和有效输出GS。",
+    "pins": [
+      { "id": "EI", "name": "EI", "direction": "input", "role": "enable", "active": "low" },
+      { "id": "I0", "name": "I0", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I1", "name": "I1", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I2", "name": "I2", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I3", "name": "I3", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I4", "name": "I4", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I5", "name": "I5", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I6", "name": "I6", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I7", "name": "I7", "direction": "input", "role": "data", "active": "low" }
+    ],
+    "output_pins": [
+      { "id": "A2", "name": "A2", "direction": "output", "role": "address", "active": "low" },
+      { "id": "A1", "name": "A1", "direction": "output", "role": "address", "active": "low" },
+      { "id": "A0", "name": "A0", "direction": "output", "role": "address", "active": "low" },
+      { "id": "GS", "name": "GS", "direction": "output", "role": "valid", "active": "low" },
+      { "id": "EO", "name": "EO", "direction": "output", "role": "cascade", "active": "low" }
+    ],
+    "params": { "delay": 1 }
+  },
+  {
+    "type": "74LS147",
+    "aliases": ["74147"],
+    "name": "74LS147 BCD优先编码器",
+    "category": "chip",
+    "family": "74LS",
+    "description": "二-十进制（BCD）优先编码器，输入/输出均为低有效。I9优先级最高。I0隐含（无输入时输出0的编码）。",
+    "pins": [
+      { "id": "I1", "name": "I1", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I2", "name": "I2", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I3", "name": "I3", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I4", "name": "I4", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I5", "name": "I5", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I6", "name": "I6", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I7", "name": "I7", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I8", "name": "I8", "direction": "input", "role": "data", "active": "low" },
+      { "id": "I9", "name": "I9", "direction": "input", "role": "data", "active": "low" }
+    ],
+    "output_pins": [
+      { "id": "D", "name": "D", "direction": "output", "role": "bcd", "active": "low" },
+      { "id": "C", "name": "C", "direction": "output", "role": "bcd", "active": "low" },
+      { "id": "B", "name": "B", "direction": "output", "role": "bcd", "active": "low" },
+      { "id": "A", "name": "A", "direction": "output", "role": "bcd", "active": "low" }
+    ],
+    "params": { "delay": 1 }
+  },
+  {
+    "type": "74139",
+    "aliases": [],
+    "name": "74139 双2-4线译码器",
+    "category": "chip",
+    "family": "74",
+    "description": "双2线-4线译码器。两组独立的2-4译码器，各有使能端。输出低有效。",
+    "pins": [
+      { "id": "1A0", "name": "1A0", "direction": "input", "role": "address", "active": "high" },
+      { "id": "1A1", "name": "1A1", "direction": "input", "role": "address", "active": "high" },
+      { "id": "1E", "name": "1E", "direction": "input", "role": "enable", "active": "low" },
+      { "id": "2A0", "name": "2A0", "direction": "input", "role": "address", "active": "high" },
+      { "id": "2A1", "name": "2A1", "direction": "input", "role": "address", "active": "high" },
+      { "id": "2E", "name": "2E", "direction": "input", "role": "enable", "active": "low" }
+    ],
+    "output_pins": [
+      { "id": "1Y0", "name": "1Y0", "direction": "output", "role": "data", "active": "low" },
+      { "id": "1Y1", "name": "1Y1", "direction": "output", "role": "data", "active": "low" },
+      { "id": "1Y2", "name": "1Y2", "direction": "output", "role": "data", "active": "low" },
+      { "id": "1Y3", "name": "1Y3", "direction": "output", "role": "data", "active": "low" },
+      { "id": "2Y0", "name": "2Y0", "direction": "output", "role": "data", "active": "low" },
+      { "id": "2Y1", "name": "2Y1", "direction": "output", "role": "data", "active": "low" },
+      { "id": "2Y2", "name": "2Y2", "direction": "output", "role": "data", "active": "low" },
+      { "id": "2Y3", "name": "2Y3", "direction": "output", "role": "data", "active": "low" }
+    ],
+    "params": { "delay": 1 }
+  },
+  {
+    "type": "74LS138",
+    "aliases": ["74138"],
+    "name": "74LS138 3-8线译码器",
+    "category": "chip",
+    "family": "74LS",
+    "description": "3线-8线译码器。三个使能端G1（高有效）、G2A和G2B（低有效），必须同时满足才使能。输出低有效。",
+    "pins": [
+      { "id": "A", "name": "A", "direction": "input", "role": "address", "active": "high" },
+      { "id": "B", "name": "B", "direction": "input", "role": "address", "active": "high" },
+      { "id": "C", "name": "C", "direction": "input", "role": "address", "active": "high" },
+      { "id": "G1", "name": "G1", "direction": "input", "role": "enable", "active": "high" },
+      { "id": "G2A", "name": "G2A", "direction": "input", "role": "enable", "active": "low" },
+      { "id": "G2B", "name": "G2B", "direction": "input", "role": "enable", "active": "low" }
+    ],
+    "output_pins": [
+      { "id": "Y0", "name": "Y0", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y1", "name": "Y1", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y2", "name": "Y2", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y3", "name": "Y3", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y4", "name": "Y4", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y5", "name": "Y5", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y6", "name": "Y6", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y7", "name": "Y7", "direction": "output", "role": "data", "active": "low" }
+    ],
+    "params": { "delay": 1 }
+  },
+  {
+    "type": "74LS42",
+    "aliases": ["7442"],
+    "name": "74LS42 BCD-十进制译码器",
+    "category": "chip",
+    "family": "74LS",
+    "description": "BCD码-十进制译码器，4位输入译码为10位输出。输出低有效。非法BCD码(10-15)时所有输出非激活。",
+    "pins": [
+      { "id": "A", "name": "A", "direction": "input", "role": "bcd", "active": "high" },
+      { "id": "B", "name": "B", "direction": "input", "role": "bcd", "active": "high" },
+      { "id": "C", "name": "C", "direction": "input", "role": "bcd", "active": "high" },
+      { "id": "D", "name": "D", "direction": "input", "role": "bcd", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "Y0", "name": "Y0", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y1", "name": "Y1", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y2", "name": "Y2", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y3", "name": "Y3", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y4", "name": "Y4", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y5", "name": "Y5", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y6", "name": "Y6", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y7", "name": "Y7", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y8", "name": "Y8", "direction": "output", "role": "data", "active": "low" },
+      { "id": "Y9", "name": "Y9", "direction": "output", "role": "data", "active": "low" }
+    ],
+    "params": { "delay": 1 }
+  },
+  {
+    "type": "7448",
+    "aliases": [],
+    "name": "7448 七段显示译码器",
+    "category": "chip",
+    "family": "74",
+    "description": "BCD-七段显示译码器/驱动器。含灯测试LT、灭零输入RBI和消隐输入/灭零输出BI/RBO。输出高有效。",
+    "pins": [
+      { "id": "A", "name": "A", "direction": "input", "role": "bcd", "active": "high" },
+      { "id": "B", "name": "B", "direction": "input", "role": "bcd", "active": "high" },
+      { "id": "C", "name": "C", "direction": "input", "role": "bcd", "active": "high" },
+      { "id": "D", "name": "D", "direction": "input", "role": "bcd", "active": "high" },
+      { "id": "LT", "name": "LT", "direction": "input", "role": "lamp_test", "active": "low" },
+      { "id": "RBI", "name": "RBI", "direction": "input", "role": "ripple_blanking", "active": "low" },
+      { "id": "BIRBO", "name": "BI/RBO", "direction": "bidirectional", "role": "blanking", "active": "low" }
+    ],
+    "output_pins": [
+      { "id": "a", "name": "a", "direction": "output", "role": "segment", "active": "high" },
+      { "id": "b", "name": "b", "direction": "output", "role": "segment", "active": "high" },
+      { "id": "c", "name": "c", "direction": "output", "role": "segment", "active": "high" },
+      { "id": "d", "name": "d", "direction": "output", "role": "segment", "active": "high" },
+      { "id": "e", "name": "e", "direction": "output", "role": "segment", "active": "high" },
+      { "id": "f", "name": "f", "direction": "output", "role": "segment", "active": "high" },
+      { "id": "g", "name": "g", "direction": "output", "role": "segment", "active": "high" }
+    ],
+    "params": { "delay": 1 }
+  },
+  {
+    "type": "74153",
+    "aliases": ["74HC153"],
+    "name": "74153 双4选1数据选择器",
+    "category": "chip",
+    "family": "74",
+    "description": "双4选1数据选择器（MUX）。两个4选1通道共用选择端A、B。各有独立的使能端G（低有效）。",
+    "pins": [
+      { "id": "A", "name": "A", "direction": "input", "role": "select", "active": "high" },
+      { "id": "B", "name": "B", "direction": "input", "role": "select", "active": "high" },
+      { "id": "1G", "name": "1G", "direction": "input", "role": "enable", "active": "low" },
+      { "id": "1C0", "name": "1C0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "1C1", "name": "1C1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "1C2", "name": "1C2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "1C3", "name": "1C3", "direction": "input", "role": "data", "active": "high" },
+      { "id": "2G", "name": "2G", "direction": "input", "role": "enable", "active": "low" },
+      { "id": "2C0", "name": "2C0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "2C1", "name": "2C1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "2C2", "name": "2C2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "2C3", "name": "2C3", "direction": "input", "role": "data", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "1Y", "name": "1Y", "direction": "output", "role": "data", "active": "high" },
+      { "id": "2Y", "name": "2Y", "direction": "output", "role": "data", "active": "high" }
+    ],
+    "params": { "delay": 1 }
+  },
+  {
+    "type": "74LS151",
+    "aliases": ["74151"],
+    "name": "74LS151 8选1数据选择器",
+    "category": "chip",
+    "family": "74LS",
+    "description": "8选1数据选择器（MUX）。3位选择端A、B、C，使能端G（低有效）。输出Y和互补输出W。",
+    "pins": [
+      { "id": "A", "name": "A", "direction": "input", "role": "select", "active": "high" },
+      { "id": "B", "name": "B", "direction": "input", "role": "select", "active": "high" },
+      { "id": "C", "name": "C", "direction": "input", "role": "select", "active": "high" },
+      { "id": "G", "name": "G", "direction": "input", "role": "strobe", "active": "low" },
+      { "id": "D0", "name": "D0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D1", "name": "D1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D2", "name": "D2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D3", "name": "D3", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D4", "name": "D4", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D5", "name": "D5", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D6", "name": "D6", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D7", "name": "D7", "direction": "input", "role": "data", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "Y", "name": "Y", "direction": "output", "role": "output", "active": "high" },
+      { "id": "W", "name": "W", "direction": "output", "role": "output_n", "active": "low" }
+    ],
+    "params": { "delay": 1 }
+  },
+  {
+    "type": "7485",
+    "aliases": [],
+    "name": "7485 4位数值比较器",
+    "category": "chip",
+    "family": "74",
+    "description": "4位数值比较器。比较A0-A3和B0-B3，输出A>B、A=B、A<B。支持级联输入。",
+    "pins": [
+      { "id": "A0", "name": "A0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "A1", "name": "A1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "A2", "name": "A2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "A3", "name": "A3", "direction": "input", "role": "data", "active": "high" },
+      { "id": "B0", "name": "B0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "B1", "name": "B1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "B2", "name": "B2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "B3", "name": "B3", "direction": "input", "role": "data", "active": "high" },
+      { "id": "AGTB", "name": "AGTB", "direction": "input", "role": "cascade_gt", "active": "high" },
+      { "id": "AEQB", "name": "AEQB", "direction": "input", "role": "cascade_eq", "active": "high" },
+      { "id": "ALTB", "name": "ALTB", "direction": "input", "role": "cascade_lt", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "AGTBO", "name": "AGTBO", "direction": "output", "role": "gt", "active": "high" },
+      { "id": "AEQBO", "name": "AEQBO", "direction": "output", "role": "eq", "active": "high" },
+      { "id": "ALTBO", "name": "ALTBO", "direction": "output", "role": "lt", "active": "high" }
+    ],
+    "params": { "delay": 1 }
+  },
+  {
+    "type": "74280",
+    "aliases": [],
+    "name": "74280 奇偶校验器",
+    "category": "chip",
+    "family": "74",
+    "description": "9位奇偶校验器/发生器。输入A-I共9位。输出EVEN（偶数个1时高）和ODD（奇数个1时高）。",
+    "pins": [
+      { "id": "A", "name": "A", "direction": "input", "role": "data", "active": "high" },
+      { "id": "B", "name": "B", "direction": "input", "role": "data", "active": "high" },
+      { "id": "C", "name": "C", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D", "name": "D", "direction": "input", "role": "data", "active": "high" },
+      { "id": "E", "name": "E", "direction": "input", "role": "data", "active": "high" },
+      { "id": "F", "name": "F", "direction": "input", "role": "data", "active": "high" },
+      { "id": "G", "name": "G", "direction": "input", "role": "data", "active": "high" },
+      { "id": "H", "name": "H", "direction": "input", "role": "data", "active": "high" },
+      { "id": "I", "name": "I", "direction": "input", "role": "data", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "EVEN", "name": "EVEN", "direction": "output", "role": "even", "active": "high" },
+      { "id": "ODD", "name": "ODD", "direction": "output", "role": "odd", "active": "high" }
+    ],
+    "params": { "delay": 1 }
+  },
+  {
+    "type": "74283",
+    "aliases": [],
+    "name": "74283 4位二进制加法器",
+    "category": "chip",
+    "family": "74",
+    "description": "4位二进制全加器。A0-A3加B0-B3加进位输入C0，输出和S0-S3及进位输出C4。支持级联。",
+    "pins": [
+      { "id": "A0", "name": "A0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "A1", "name": "A1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "A2", "name": "A2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "A3", "name": "A3", "direction": "input", "role": "data", "active": "high" },
+      { "id": "B0", "name": "B0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "B1", "name": "B1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "B2", "name": "B2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "B3", "name": "B3", "direction": "input", "role": "data", "active": "high" },
+      { "id": "C0", "name": "C0", "direction": "input", "role": "carry_in", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "S0", "name": "S0", "direction": "output", "role": "sum", "active": "high" },
+      { "id": "S1", "name": "S1", "direction": "output", "role": "sum", "active": "high" },
+      { "id": "S2", "name": "S2", "direction": "output", "role": "sum", "active": "high" },
+      { "id": "S3", "name": "S3", "direction": "output", "role": "sum", "active": "high" },
+      { "id": "C4", "name": "C4", "direction": "output", "role": "carry_out", "active": "high" }
+    ],
+    "params": { "delay": 1 }
+  },
+  {
+    "type": "74175",
+    "aliases": [],
+    "name": "74175 4位集成寄存器",
+    "category": "chip",
+    "family": "74",
+    "description": "4位集成寄存器。CP上升沿装入D0-D3到Q0-Q3，CLR低有效异步清零。提供互补输出QN。",
+    "pins": [
+      { "id": "CLR", "name": "CLR", "direction": "input", "role": "clear", "active": "low" },
+      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" },
+      { "id": "D0", "name": "D0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D1", "name": "D1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D2", "name": "D2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D3", "name": "D3", "direction": "input", "role": "data", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "Q0", "name": "Q0", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q1", "name": "Q1", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q2", "name": "Q2", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q3", "name": "Q3", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q0N", "name": "Q0N", "direction": "output", "role": "data_n", "active": "high" },
+      { "id": "Q1N", "name": "Q1N", "direction": "output", "role": "data_n", "active": "high" },
+      { "id": "Q2N", "name": "Q2N", "direction": "output", "role": "data_n", "active": "high" },
+      { "id": "Q3N", "name": "Q3N", "direction": "output", "role": "data_n", "active": "high" }
+    ],
+    "params": { "delay": 1, "initial": 0 }
+  },
+  {
+    "type": "74LS195",
+    "aliases": ["74195"],
+    "name": "74LS195 4位右移移位寄存器",
+    "category": "chip",
+    "family": "74LS",
+    "description": "4位右移移位寄存器。CLR异步清零（低有效）。SH/LD=0时并行置数，SH/LD=1时CP上升沿右移。J/K决定串行移入的第一位。",
+    "pins": [
+      { "id": "CLR", "name": "CLR", "direction": "input", "role": "clear", "active": "low" },
+      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" },
+      { "id": "J", "name": "J", "direction": "input", "role": "serial_j", "active": "high" },
+      { "id": "K", "name": "K", "direction": "input", "role": "serial_k", "active": "high" },
+      { "id": "SHLD", "name": "SH/LD", "direction": "input", "role": "shift_load_n", "active": "low" },
+      { "id": "D0", "name": "D0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D1", "name": "D1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D2", "name": "D2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D3", "name": "D3", "direction": "input", "role": "data", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "Q0", "name": "Q0", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q1", "name": "Q1", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q2", "name": "Q2", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q3", "name": "Q3", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q3N", "name": "Q3N", "direction": "output", "role": "data_n", "active": "high" }
+    ],
+    "params": { "delay": 1, "initial": 0 }
+  },
+  {
+    "type": "74LS194",
+    "aliases": ["74194"],
+    "name": "74LS194 4位双向移位寄存器",
+    "category": "chip",
+    "family": "74LS",
+    "description": "4位双向移位寄存器。CR异步清零（低有效）。模式控制S1S0：00保持、01右移、10左移、11并行置数。DSR/DSL为串行右/左输入。",
+    "pins": [
+      { "id": "CR", "name": "CR", "direction": "input", "role": "clear", "active": "low" },
+      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" },
+      { "id": "S0", "name": "S0", "direction": "input", "role": "mode", "active": "high" },
+      { "id": "S1", "name": "S1", "direction": "input", "role": "mode", "active": "high" },
+      { "id": "DSR", "name": "DSR", "direction": "input", "role": "serial_right", "active": "high" },
+      { "id": "DSL", "name": "DSL", "direction": "input", "role": "serial_left", "active": "high" },
+      { "id": "D0", "name": "D0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D1", "name": "D1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D2", "name": "D2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D3", "name": "D3", "direction": "input", "role": "data", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "Q0", "name": "Q0", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q1", "name": "Q1", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q2", "name": "Q2", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q3", "name": "Q3", "direction": "output", "role": "data", "active": "high" }
+    ],
+    "params": { "delay": 1, "initial": 0 }
+  },
+  {
+    "type": "74161",
+    "aliases": ["74LS161"],
+    "name": "74161 4位同步二进制计数器",
+    "category": "chip",
+    "family": "74",
+    "description": "4位同步二进制计数器，模16。CR异步清零（低有效），LD同步置数（低有效），EP/ET计数使能（高有效）。CO=ET·Q3·Q2·Q1·Q0。",
+    "pins": [
+      { "id": "CR", "name": "CR", "direction": "input", "role": "clear", "active": "low" },
+      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" },
+      { "id": "LD", "name": "LD", "direction": "input", "role": "load", "active": "low" },
+      { "id": "EP", "name": "EP", "direction": "input", "role": "count_enable", "active": "high" },
+      { "id": "ET", "name": "ET", "direction": "input", "role": "count_enable", "active": "high" },
+      { "id": "D0", "name": "D0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D1", "name": "D1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D2", "name": "D2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D3", "name": "D3", "direction": "input", "role": "data", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "Q0", "name": "Q0", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q1", "name": "Q1", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q2", "name": "Q2", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q3", "name": "Q3", "direction": "output", "role": "data", "active": "high" },
+      { "id": "CO", "name": "CO", "direction": "output", "role": "carry_out", "active": "high" }
+    ],
+    "params": { "delay": 1, "initial": 0 }
+  },
+  {
+    "type": "74163",
+    "aliases": [],
+    "name": "74163 4位同步二进制计数器（同步清零）",
+    "category": "chip",
+    "family": "74",
+    "description": "4位同步二进制计数器，模16。与74161的区别：CR为同步清零（只在CP上升沿生效）。",
+    "pins": [
+      { "id": "CR", "name": "CR", "direction": "input", "role": "clear", "active": "low" },
+      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" },
+      { "id": "LD", "name": "LD", "direction": "input", "role": "load", "active": "low" },
+      { "id": "EP", "name": "EP", "direction": "input", "role": "count_enable", "active": "high" },
+      { "id": "ET", "name": "ET", "direction": "input", "role": "count_enable", "active": "high" },
+      { "id": "D0", "name": "D0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D1", "name": "D1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D2", "name": "D2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D3", "name": "D3", "direction": "input", "role": "data", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "Q0", "name": "Q0", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q1", "name": "Q1", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q2", "name": "Q2", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q3", "name": "Q3", "direction": "output", "role": "data", "active": "high" },
+      { "id": "CO", "name": "CO", "direction": "output", "role": "carry_out", "active": "high" }
+    ],
+    "params": { "delay": 1, "initial": 0 }
+  },
+  {
+    "type": "74191",
+    "aliases": [],
+    "name": "74191 4位可逆计数器",
+    "category": "chip",
+    "family": "74",
+    "description": "4位可逆计数器，模16。CTEN计数使能（低有效），D/U方向控制（0=加/1=减），LD异步置数（低有效）。输出MAX/MIN和RCO。",
+    "pins": [
+      { "id": "CTEN", "name": "CTEN", "direction": "input", "role": "count_enable", "active": "low" },
+      { "id": "DU", "name": "D/U", "direction": "input", "role": "up_down", "active": "high" },
+      { "id": "LD", "name": "LD", "direction": "input", "role": "load", "active": "low" },
+      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" },
+      { "id": "D0", "name": "D0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D1", "name": "D1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D2", "name": "D2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D3", "name": "D3", "direction": "input", "role": "data", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "Q0", "name": "Q0", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q1", "name": "Q1", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q2", "name": "Q2", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q3", "name": "Q3", "direction": "output", "role": "data", "active": "high" },
+      { "id": "MAXMIN", "name": "MAX/MIN", "direction": "output", "role": "terminal_count", "active": "high" },
+      { "id": "RCO", "name": "RCO", "direction": "output", "role": "ripple_clock", "active": "low" }
+    ],
+    "params": { "delay": 1, "initial": 0 }
+  },
+  {
+    "type": "74160",
+    "aliases": [],
+    "name": "74160 十进制计数器",
+    "category": "chip",
+    "family": "74",
+    "description": "十进制（BCD）计数器，模10。与74161接口相同，但计数范围0-9。CO=ET·Q3·Q0（计数到9时高）。",
+    "pins": [
+      { "id": "CR", "name": "CR", "direction": "input", "role": "clear", "active": "low" },
+      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" },
+      { "id": "LD", "name": "LD", "direction": "input", "role": "load", "active": "low" },
+      { "id": "EP", "name": "EP", "direction": "input", "role": "count_enable", "active": "high" },
+      { "id": "ET", "name": "ET", "direction": "input", "role": "count_enable", "active": "high" },
+      { "id": "D0", "name": "D0", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D1", "name": "D1", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D2", "name": "D2", "direction": "input", "role": "data", "active": "high" },
+      { "id": "D3", "name": "D3", "direction": "input", "role": "data", "active": "high" }
+    ],
+    "output_pins": [
+      { "id": "Q0", "name": "Q0", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q1", "name": "Q1", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q2", "name": "Q2", "direction": "output", "role": "data", "active": "high" },
+      { "id": "Q3", "name": "Q3", "direction": "output", "role": "data", "active": "high" },
+      { "id": "CO", "name": "CO", "direction": "output", "role": "carry_out", "active": "high" }
+    ],
+    "params": { "delay": 1, "initial": 0 }
+  }
+]
