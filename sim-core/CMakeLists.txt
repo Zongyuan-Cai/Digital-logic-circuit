@@ -39,7 +39,7 @@ add_library(sim_core STATIC ${SIM_CORE_SOURCES} ${SIM_CORE_HEADERS})
 target_include_directories(sim_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
-target_compile_options(sim_core PRIVATE -Wall -Wextra)
+target_compile_options(sim_core PRIVATE -Wall -Wextra -fPIC)
 
 # ============================================================
 # Tests — try gitee mirror for GTest (github blocked in some regions)
