@@ -22,3 +22,9 @@ Thumbs.db
 
 # Data (runtime SQLite database)
 data/
+
+# Local runtime artifacts
+.backend.log
+.frontend.log
+.pids/
+.codex/

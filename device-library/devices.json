@@ -29,7 +29,7 @@
     "gates": 7,
     "flip_flops": 14,
     "chips": 18,
-    "io_devices": 7
+    "io_devices": 6
   },
-  "total_devices": 46
+  "total_devices": 45
 }

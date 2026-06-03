@@ -1,25 +1,41 @@
 [
   {
     "type": "VCC",
-    "name": "VCC 高电平",
+    "name": "高电平",
     "category": "io",
     "family": "power",
     "description": "恒定高电平输出 (逻辑1)。",
     "output_pins": [
-      { "id": "OUT", "name": "OUT", "direction": "output", "role": "power", "active": "high" }
+      {
+        "id": "OUT",
+        "name": "OUT",
+        "direction": "output",
+        "role": "power",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1 }
+    "params": {
+      "delay": 1
+    }
   },
   {
     "type": "GND",
-    "name": "GND 低电平",
+    "name": "低电平",
     "category": "io",
     "family": "power",
     "description": "恒定低电平输出 (逻辑0)。",
     "output_pins": [
-      { "id": "OUT", "name": "OUT", "direction": "output", "role": "ground", "active": "high" }
+      {
+        "id": "OUT",
+        "name": "OUT",
+        "direction": "output",
+        "role": "ground",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1 }
+    "params": {
+      "delay": 1
+    }
   },
   {
     "type": "SWITCH",
@@ -28,9 +44,18 @@
     "family": "input",
     "description": "用户可切换的开关。在属性面板中切换 0/1。",
     "output_pins": [
-      { "id": "OUT", "name": "OUT", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "OUT",
+        "name": "OUT",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "value": 0 }
+    "params": {
+      "delay": 1,
+      "value": 0
+    }
   },
   {
     "type": "CLOCK",
@@ -39,31 +64,39 @@
     "family": "input",
     "description": "周期时钟信号。可设置周期、占空比和初始电平。",
     "output_pins": [
-      { "id": "OUT", "name": "OUT", "direction": "output", "role": "clock", "active": "high" }
+      {
+        "id": "OUT",
+        "name": "OUT",
+        "direction": "output",
+        "role": "clock",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "period": 2, "duty": 0.5, "initial": "0" }
+    "params": {
+      "delay": 1,
+      "period": 2,
+      "duty": 0.5,
+      "initial": "0"
+    }
   },
   {
     "type": "LED",
-    "name": "LED 指示灯",
+    "name": "指示灯",
     "category": "io",
     "family": "output",
     "description": "显示输入信号电平 (0/1/X/Z)。",
     "pins": [
-      { "id": "IN", "name": "IN", "direction": "input", "role": "data", "active": "high" }
+      {
+        "id": "IN",
+        "name": "IN",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1 }
-  },
-  {
-    "type": "PROBE",
-    "name": "探针",
-    "category": "io",
-    "family": "output",
-    "description": "测量并记录节点信号，显示在示波器中。",
-    "pins": [
-      { "id": "IN", "name": "IN", "direction": "input", "role": "probe", "active": "high" }
-    ],
-    "params": { "delay": 1 }
+    "params": {
+      "delay": 1
+    }
   },
   {
     "type": "SEVEN_SEGMENT",
@@ -72,14 +105,58 @@
     "family": "output",
     "description": "七段数码管显示。输入 A-G 段选信号。",
     "pins": [
-      { "id": "A", "name": "A", "direction": "input", "role": "segment", "active": "high" },
-      { "id": "B", "name": "B", "direction": "input", "role": "segment", "active": "high" },
-      { "id": "C", "name": "C", "direction": "input", "role": "segment", "active": "high" },
-      { "id": "D", "name": "D", "direction": "input", "role": "segment", "active": "high" },
-      { "id": "E", "name": "E", "direction": "input", "role": "segment", "active": "high" },
-      { "id": "F", "name": "F", "direction": "input", "role": "segment", "active": "high" },
-      { "id": "G", "name": "G", "direction": "input", "role": "segment", "active": "high" }
+      {
+        "id": "A",
+        "name": "A",
+        "direction": "input",
+        "role": "segment",
+        "active": "high"
+      },
+      {
+        "id": "B",
+        "name": "B",
+        "direction": "input",
+        "role": "segment",
+        "active": "high"
+      },
+      {
+        "id": "C",
+        "name": "C",
+        "direction": "input",
+        "role": "segment",
+        "active": "high"
+      },
+      {
+        "id": "D",
+        "name": "D",
+        "direction": "input",
+        "role": "segment",
+        "active": "high"
+      },
+      {
+        "id": "E",
+        "name": "E",
+        "direction": "input",
+        "role": "segment",
+        "active": "high"
+      },
+      {
+        "id": "F",
+        "name": "F",
+        "direction": "input",
+        "role": "segment",
+        "active": "high"
+      },
+      {
+        "id": "G",
+        "name": "G",
+        "direction": "input",
+        "role": "segment",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1 }
+    "params": {
+      "delay": 1
+    }
   }
 ]

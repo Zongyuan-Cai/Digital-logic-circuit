@@ -50,6 +50,7 @@ class DeviceDef(BaseModel):
     type: str
     name: str
     category: DeviceCategory
+    sub_category: str = ""
     family: str = ""
     description: str = ""
     aliases: list[str] = Field(default_factory=list)
@@ -90,17 +91,10 @@ class WireDef(BaseModel):
     model_config = {"populate_by_name": True}
 
 
-class ProbeDef(BaseModel):
-    id: str = ""
-    name: str = ""
-    target: WireEndpoint
-
-
 class CircuitDef(BaseModel):
     version: str = "1.0"
     devices: list[DeviceInstance] = Field(default_factory=list)
     wires: list[WireDef] = Field(default_factory=list)
-    probes: list[ProbeDef] = Field(default_factory=list)
 
 
 # ---- Simulation ----

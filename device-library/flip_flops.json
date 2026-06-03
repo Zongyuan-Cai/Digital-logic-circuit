@@ -1,237 +1,688 @@
 [
   {
     "type": "RS_LATCH_NAND",
-    "name": "与非门型基本RS触发器 (NAND RS Latch)",
+    "name": "与非门型基本RS触发器",
     "category": "flip_flop",
     "family": "latch",
     "description": "由两个与非门交叉耦合构成的基本RS锁存器。S_N和R_N低有效。S_N=0置位，R_N=0复位，S_N=R_N=0非法。",
     "pins": [
-      { "id": "S_N", "name": "S_N", "direction": "input", "role": "set", "active": "low" },
-      { "id": "R_N", "name": "R_N", "direction": "input", "role": "reset", "active": "low" }
+      {
+        "id": "S_N",
+        "name": "S_N",
+        "direction": "input",
+        "role": "set",
+        "active": "low"
+      },
+      {
+        "id": "R_N",
+        "name": "R_N",
+        "direction": "input",
+        "role": "reset",
+        "active": "low"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0 }
+    "params": {
+      "delay": 1,
+      "initial_q": 0
+    }
   },
   {
     "type": "RS_LATCH_NOR",
-    "name": "或非门型基本RS触发器 (NOR RS Latch)",
+    "name": "或非门型基本RS触发器",
     "category": "flip_flop",
     "family": "latch",
     "description": "由两个或非门交叉耦合构成的基本RS锁存器。S和R高有效。S=1置位，R=1复位，S=R=1非法。",
     "pins": [
-      { "id": "S", "name": "S", "direction": "input", "role": "set", "active": "high" },
-      { "id": "R", "name": "R", "direction": "input", "role": "reset", "active": "high" }
+      {
+        "id": "S",
+        "name": "S",
+        "direction": "input",
+        "role": "set",
+        "active": "high"
+      },
+      {
+        "id": "R",
+        "name": "R",
+        "direction": "input",
+        "role": "reset",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0 }
+    "params": {
+      "delay": 1,
+      "initial_q": 0
+    }
   },
   {
     "type": "GATED_RS_LATCH",
-    "name": "门控RS锁存器 (Gated RS Latch)",
+    "name": "门控RS锁存器",
     "category": "flip_flop",
     "family": "latch",
     "description": "带使能端EN的RS锁存器。EN=0保持，EN=1时按RS输入端功能工作。",
     "pins": [
-      { "id": "S", "name": "S", "direction": "input", "role": "set", "active": "high" },
-      { "id": "R", "name": "R", "direction": "input", "role": "reset", "active": "high" },
-      { "id": "EN", "name": "EN", "direction": "input", "role": "enable", "active": "high" }
+      {
+        "id": "S",
+        "name": "S",
+        "direction": "input",
+        "role": "set",
+        "active": "high"
+      },
+      {
+        "id": "R",
+        "name": "R",
+        "direction": "input",
+        "role": "reset",
+        "active": "high"
+      },
+      {
+        "id": "EN",
+        "name": "EN",
+        "direction": "input",
+        "role": "enable",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0 }
+    "params": {
+      "delay": 1,
+      "initial_q": 0
+    }
   },
   {
     "type": "D_LATCH",
-    "name": "门控D锁存器 (Gated D Latch)",
+    "name": "门控D锁存器",
     "category": "flip_flop",
     "family": "latch",
     "description": "透明D锁存器。EN=1时Q跟随D（透明），EN=0时保持。",
     "pins": [
-      { "id": "D", "name": "D", "direction": "input", "role": "data", "active": "high" },
-      { "id": "EN", "name": "EN", "direction": "input", "role": "enable", "active": "high" }
+      {
+        "id": "D",
+        "name": "D",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "EN",
+        "name": "EN",
+        "direction": "input",
+        "role": "enable",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0 }
+    "params": {
+      "delay": 1,
+      "initial_q": 0
+    }
   },
   {
     "type": "SYNC_RS_FF",
-    "name": "同步RS触发器 (Sync RS Flip-Flop)",
+    "name": "同步RS触发器",
     "category": "flip_flop",
     "family": "sync",
     "description": "带时钟CP的同步RS触发器。有效时钟边沿时按S/R输入更新状态。支持上升/下降沿配置。",
     "pins": [
-      { "id": "S", "name": "S", "direction": "input", "role": "set", "active": "high" },
-      { "id": "R", "name": "R", "direction": "input", "role": "reset", "active": "high" },
-      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" }
+      {
+        "id": "S",
+        "name": "S",
+        "direction": "input",
+        "role": "set",
+        "active": "high"
+      },
+      {
+        "id": "R",
+        "name": "R",
+        "direction": "input",
+        "role": "reset",
+        "active": "high"
+      },
+      {
+        "id": "CP",
+        "name": "CP",
+        "direction": "input",
+        "role": "clock",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0, "edge": "rising" }
+    "params": {
+      "delay": 1,
+      "initial_q": 0,
+      "edge": "rising"
+    }
   },
   {
     "type": "SYNC_D_FF",
-    "name": "同步D触发器 (Sync D Flip-Flop)",
+    "name": "同步D触发器",
     "category": "flip_flop",
     "family": "sync",
     "description": "带时钟CP的同步D触发器。有效时钟边沿时Q=D。支持上升/下降沿配置。",
     "pins": [
-      { "id": "D", "name": "D", "direction": "input", "role": "data", "active": "high" },
-      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" }
+      {
+        "id": "D",
+        "name": "D",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "CP",
+        "name": "CP",
+        "direction": "input",
+        "role": "clock",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0, "edge": "rising" }
+    "params": {
+      "delay": 1,
+      "initial_q": 0,
+      "edge": "rising"
+    }
   },
   {
     "type": "SYNC_JK_FF",
-    "name": "同步JK触发器 (Sync JK Flip-Flop)",
+    "name": "同步JK触发器",
     "category": "flip_flop",
     "family": "sync",
     "description": "带时钟CP的同步JK触发器。J=K=0保持，J=0/K=1复位，J=1/K=0置位，J=K=1翻转。",
     "pins": [
-      { "id": "J", "name": "J", "direction": "input", "role": "j_input", "active": "high" },
-      { "id": "K", "name": "K", "direction": "input", "role": "k_input", "active": "high" },
-      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" }
+      {
+        "id": "J",
+        "name": "J",
+        "direction": "input",
+        "role": "j_input",
+        "active": "high"
+      },
+      {
+        "id": "K",
+        "name": "K",
+        "direction": "input",
+        "role": "k_input",
+        "active": "high"
+      },
+      {
+        "id": "CP",
+        "name": "CP",
+        "direction": "input",
+        "role": "clock",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0, "edge": "rising" }
+    "params": {
+      "delay": 1,
+      "initial_q": 0,
+      "edge": "rising"
+    }
   },
   {
     "type": "SYNC_T_FF",
-    "name": "同步T触发器 (Sync T Flip-Flop)",
+    "name": "同步T触发器",
     "category": "flip_flop",
     "family": "sync",
     "description": "带时钟CP的同步T触发器。T=0保持，T=1翻转。",
     "pins": [
-      { "id": "T", "name": "T", "direction": "input", "role": "toggle", "active": "high" },
-      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" }
+      {
+        "id": "T",
+        "name": "T",
+        "direction": "input",
+        "role": "toggle",
+        "active": "high"
+      },
+      {
+        "id": "CP",
+        "name": "CP",
+        "direction": "input",
+        "role": "clock",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0, "edge": "rising" }
+    "params": {
+      "delay": 1,
+      "initial_q": 0,
+      "edge": "rising"
+    }
   },
   {
     "type": "MASTER_SLAVE_RS_FF",
-    "name": "主从RS触发器 (Master-Slave RS FF)",
+    "name": "主从RS触发器",
     "category": "flip_flop",
     "family": "master_slave",
     "description": "主从结构RS触发器。CP=1时主触发器采样，CP下降沿时从触发器输出。",
     "pins": [
-      { "id": "S", "name": "S", "direction": "input", "role": "set", "active": "high" },
-      { "id": "R", "name": "R", "direction": "input", "role": "reset", "active": "high" },
-      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" }
+      {
+        "id": "S",
+        "name": "S",
+        "direction": "input",
+        "role": "set",
+        "active": "high"
+      },
+      {
+        "id": "R",
+        "name": "R",
+        "direction": "input",
+        "role": "reset",
+        "active": "high"
+      },
+      {
+        "id": "CP",
+        "name": "CP",
+        "direction": "input",
+        "role": "clock",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0 }
+    "params": {
+      "delay": 1,
+      "initial_q": 0
+    }
   },
   {
     "type": "MASTER_SLAVE_D_FF",
-    "name": "主从D触发器 (Master-Slave D FF)",
+    "name": "主从D触发器",
     "category": "flip_flop",
     "family": "master_slave",
     "description": "主从结构D触发器。CP=1时主触发器采样D，CP下降沿时从触发器输出。",
     "pins": [
-      { "id": "D", "name": "D", "direction": "input", "role": "data", "active": "high" },
-      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" }
+      {
+        "id": "D",
+        "name": "D",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "CP",
+        "name": "CP",
+        "direction": "input",
+        "role": "clock",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0 }
+    "params": {
+      "delay": 1,
+      "initial_q": 0
+    }
   },
   {
     "type": "MASTER_SLAVE_JK_FF",
-    "name": "主从JK触发器 (Master-Slave JK FF)",
+    "name": "主从JK触发器",
     "category": "flip_flop",
     "family": "master_slave",
     "description": "主从结构JK触发器。CP=1时主触发器按JK功能工作，CP下降沿时从触发器输出。",
     "pins": [
-      { "id": "J", "name": "J", "direction": "input", "role": "j_input", "active": "high" },
-      { "id": "K", "name": "K", "direction": "input", "role": "k_input", "active": "high" },
-      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" }
+      {
+        "id": "J",
+        "name": "J",
+        "direction": "input",
+        "role": "j_input",
+        "active": "high"
+      },
+      {
+        "id": "K",
+        "name": "K",
+        "direction": "input",
+        "role": "k_input",
+        "active": "high"
+      },
+      {
+        "id": "CP",
+        "name": "CP",
+        "direction": "input",
+        "role": "clock",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0 }
+    "params": {
+      "delay": 1,
+      "initial_q": 0
+    }
   },
   {
     "type": "EDGE_D_FF",
-    "name": "边沿D触发器 (Edge-Triggered D FF)",
+    "name": "边沿D触发器",
     "category": "flip_flop",
     "family": "edge",
     "description": "边沿触发D触发器，带异步预置端PRE和清零端CLR（低有效）。异步控制优先于时钟。",
     "pins": [
-      { "id": "D", "name": "D", "direction": "input", "role": "data", "active": "high" },
-      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" },
-      { "id": "PRE", "name": "PRE", "direction": "input", "role": "preset", "active": "low" },
-      { "id": "CLR", "name": "CLR", "direction": "input", "role": "clear", "active": "low" }
+      {
+        "id": "D",
+        "name": "D",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "CP",
+        "name": "CP",
+        "direction": "input",
+        "role": "clock",
+        "active": "high"
+      },
+      {
+        "id": "PRE",
+        "name": "PRE",
+        "direction": "input",
+        "role": "preset",
+        "active": "low"
+      },
+      {
+        "id": "CLR",
+        "name": "CLR",
+        "direction": "input",
+        "role": "clear",
+        "active": "low"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0, "edge": "rising" }
+    "params": {
+      "delay": 1,
+      "initial_q": 0,
+      "edge": "rising"
+    }
   },
   {
     "type": "EDGE_JK_FF",
-    "name": "边沿JK触发器 (Edge-Triggered JK FF)",
+    "name": "边沿JK触发器",
     "category": "flip_flop",
     "family": "edge",
     "description": "边沿触发JK触发器，带异步预置端PRE和清零端CLR（低有效）。异步控制优先于时钟。",
     "pins": [
-      { "id": "J", "name": "J", "direction": "input", "role": "j_input", "active": "high" },
-      { "id": "K", "name": "K", "direction": "input", "role": "k_input", "active": "high" },
-      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" },
-      { "id": "PRE", "name": "PRE", "direction": "input", "role": "preset", "active": "low" },
-      { "id": "CLR", "name": "CLR", "direction": "input", "role": "clear", "active": "low" }
+      {
+        "id": "J",
+        "name": "J",
+        "direction": "input",
+        "role": "j_input",
+        "active": "high"
+      },
+      {
+        "id": "K",
+        "name": "K",
+        "direction": "input",
+        "role": "k_input",
+        "active": "high"
+      },
+      {
+        "id": "CP",
+        "name": "CP",
+        "direction": "input",
+        "role": "clock",
+        "active": "high"
+      },
+      {
+        "id": "PRE",
+        "name": "PRE",
+        "direction": "input",
+        "role": "preset",
+        "active": "low"
+      },
+      {
+        "id": "CLR",
+        "name": "CLR",
+        "direction": "input",
+        "role": "clear",
+        "active": "low"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0, "edge": "rising" }
+    "params": {
+      "delay": 1,
+      "initial_q": 0,
+      "edge": "rising"
+    }
   },
   {
     "type": "BLOCKING_JK_FF",
-    "name": "维持-阻塞JK触发器 (Blocking JK FF)",
+    "name": "维持-阻塞JK触发器",
     "category": "flip_flop",
     "family": "edge",
     "description": "维持-阻塞型JK触发器，上升沿触发。利用维持线和阻塞线防止空翻。",
     "pins": [
-      { "id": "J", "name": "J", "direction": "input", "role": "j_input", "active": "high" },
-      { "id": "K", "name": "K", "direction": "input", "role": "k_input", "active": "high" },
-      { "id": "CP", "name": "CP", "direction": "input", "role": "clock", "active": "high" }
+      {
+        "id": "J",
+        "name": "J",
+        "direction": "input",
+        "role": "j_input",
+        "active": "high"
+      },
+      {
+        "id": "K",
+        "name": "K",
+        "direction": "input",
+        "role": "k_input",
+        "active": "high"
+      },
+      {
+        "id": "CP",
+        "name": "CP",
+        "direction": "input",
+        "role": "clock",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Q", "name": "Q", "direction": "output", "role": "data", "active": "high" },
-      { "id": "QN", "name": "QN", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Q",
+        "name": "Q",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "QN",
+        "name": "QN",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "initial_q": 0, "edge": "rising" }
+    "params": {
+      "delay": 1,
+      "initial_q": 0,
+      "edge": "rising"
+    }
   }
 ]

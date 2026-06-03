@@ -61,6 +61,7 @@ class DeviceLibraryService:
                     type=entry["type"],
                     name=entry["name"],
                     category=entry.get("category", "chip"),
+                    sub_category=entry.get("sub_category", ""),
                     family=entry.get("family", ""),
                     description=entry.get("description", ""),
                     aliases=entry.get("aliases", []),
@@ -84,12 +85,12 @@ class DeviceLibraryService:
         result = list(self._devices.values())
         if category:
             result = [d for d in result if d.category == category]
-        # Deduplicate by type, preferring the canonical (non-alias) entry
+        # Deduplicate by name (aliases share the same name as canonical entries)
         seen: set[str] = set()
         deduped: list[DeviceDef] = []
         for d in result:
-            if d.type not in seen:
-                seen.add(d.type)
+            if d.name not in seen:
+                seen.add(d.name)
                 deduped.append(d)
         return deduped
 

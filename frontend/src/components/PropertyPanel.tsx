@@ -3,8 +3,8 @@ import { useStore } from '../store/useStore';
 export function PropertyPanel() {
   const {
     circuit, devices, selectedDeviceId, selectedWireId,
-    simResult, removeDevice, removeWire, selectDevice, selectWire,
-    updateDeviceParam,
+    simResult, removeDevice, removeWire,
+    updateDeviceParam, waveformDeviceIds, toggleWaveformDevice,
   } = useStore();
 
   // Show wire info
@@ -54,6 +54,8 @@ export function PropertyPanel() {
   }
 
   const pins = def.pins;
+  const isClock = dev.type === 'CLOCK';
+  const shownInScope = waveformDeviceIds.includes(dev.id);
   const nodeVal = (pinId: string): string | null => {
     if (!simResult) return null;
     return simResult.final_nodes[`${dev.id}.${pinId}`] || null;
@@ -92,6 +94,22 @@ export function PropertyPanel() {
       <div style={styles.section}>
         <div style={styles.label}>ID</div>
         <div style={styles.value}>{dev.id}</div>
+      </div>
+
+      <div style={styles.section}>
+        {isClock ? (
+          <div style={styles.scopeFixed}>时钟源波形常驻显示</div>
+        ) : (
+          <button
+            style={{
+              ...styles.scopeBtn,
+              ...(shownInScope ? styles.scopeBtnActive : {}),
+            }}
+            onClick={() => toggleWaveformDevice(dev.id)}
+          >
+            {shownInScope ? '隐藏该器件波形' : '在示波器显示'}
+          </button>
+        )}
       </div>
 
       <div style={styles.section}>
@@ -219,11 +237,14 @@ export function PropertyPanel() {
 
 const styles: Record<string, React.CSSProperties> = {
   panel: {
-    width: 240, minWidth: 240,
+    width: '100%', minWidth: 0,
     background: '#1e1e2e', color: '#cdd6f4',
     display: 'flex', flexDirection: 'column',
     borderLeft: '1px solid #313244',
-    overflow: 'hidden',
+    flex: 1,
+    minHeight: 0,
+    overflowY: 'auto',
+    overflowX: 'hidden',
   },
   title: {
     padding: '12px 16px', margin: 0, fontSize: 14, fontWeight: 600,
@@ -253,5 +274,29 @@ const styles: Record<string, React.CSSProperties> = {
     width: 60, padding: '2px 6px', borderRadius: 4,
     border: '1px solid #45475a', background: '#181825',
     color: '#cdd6f4', fontSize: 11,
+  },
+  scopeBtn: {
+    width: '100%',
+    padding: '7px 10px',
+    borderRadius: 4,
+    border: '1px solid #45475a',
+    background: '#313244',
+    color: '#cdd6f4',
+    fontSize: 12,
+    cursor: 'pointer',
+  },
+  scopeBtnActive: {
+    borderColor: '#89b4fa',
+    background: '#89b4fa30',
+    color: '#89b4fa',
+  },
+  scopeFixed: {
+    padding: '7px 10px',
+    borderRadius: 4,
+    border: '1px solid #89b4fa',
+    background: '#89b4fa20',
+    color: '#89b4fa',
+    fontSize: 12,
+    textAlign: 'center',
   },
 };

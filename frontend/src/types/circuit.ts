@@ -17,6 +17,7 @@ export interface DeviceDef {
   type: string;
   name: string;
   category: DeviceCategory;
+  sub_category?: string;
   family: string;
   description: string;
   aliases: string[];
@@ -47,7 +48,6 @@ export interface CircuitDef {
   version: string;
   devices: DeviceInstance[];
   wires: WireDef[];
-  probes?: { id: string; name: string; target: WireEndpoint }[];
 }
 
 export interface SimOptions {

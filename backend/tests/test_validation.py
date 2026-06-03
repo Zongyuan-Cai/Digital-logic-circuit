@@ -158,6 +158,25 @@ class TestValidationService:
         assert result.valid is False
         assert any(e.message == "Output conflict" for e in result.errors)
 
+    def test_feedback_wire_on_same_device_is_valid(self, validation_service):
+        """Output-to-input feedback on one device should be allowed."""
+        from backend.app.models.schemas import CircuitDef, DeviceInstance, WireDef, WireEndpoint
+        circuit = CircuitDef(
+            devices=[
+                DeviceInstance(id="ff1", type="SYNC_D_FF"),
+            ],
+            wires=[
+                WireDef(
+                    id="w1",
+                    from_=WireEndpoint(device="ff1", pin="Q"),
+                    to=WireEndpoint(device="ff1", pin="D"),
+                ),
+            ],
+        )
+        result = validation_service.validate(circuit)
+        assert result.valid is True
+        assert not any(e.message == "Output conflict" for e in result.errors)
+
 
 class TestValidationAPI:
     """HTTP endpoint tests for /api/simulations/validate."""

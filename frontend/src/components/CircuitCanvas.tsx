@@ -1,23 +1,31 @@
 import { useRef, useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import type { DeviceInstance, PinDef, WireEndpoint } from '../types/circuit';
+import { setCanvasSvgRef } from './canvasExportRef';
 
 const DEVICE_W = 140;
 const PIN_SPACING = 20;
 const PIN_RADIUS = 5;
-const SNAP = 20;
 
 export function CircuitCanvas() {
   const {
     circuit, devices, selectedDeviceId, selectedWireId, selectedPin,
-    selectDevice, selectWire, addDevice, moveDevice, deleteSelected,
-    startWire, completeWire, cancelWire, removeWire,
+    selectDevice, selectWire, moveDevice, deleteSelected,
+    startWire, completeWire, cancelWire,
+    playbackTime,
   } = useStore();
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [dragging, setDragging] = useState<{ id: string; ox: number; oy: number } | null>(null);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const [hoveredWire, setHoveredWire] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<{ dev: DeviceInstance; def: import('../types/circuit').DeviceDef | undefined; x: number; y: number } | null>(null);
+
+  // Register SVG ref for export
+  useEffect(() => {
+    setCanvasSvgRef(svgRef.current);
+    return () => setCanvasSvgRef(null);
+  }, []);
 
   // Global keyboard handler
   useEffect(() => {
@@ -85,7 +93,6 @@ export function CircuitCanvas() {
   // --- Device dragging ---
   function handleDeviceMouseDown(e: React.MouseEvent, devId: string) {
     e.stopPropagation();
-    selectDevice(devId);
     const state = useStore.getState();
     const dev = state.circuit.devices.find(d => d.id === devId);
     if (!dev) return;
@@ -123,7 +130,7 @@ export function CircuitCanvas() {
     }
   }
 
-  function handleCanvasClick(e: React.MouseEvent) {
+  function handleCanvasClick() {
     const state = useStore.getState();
     if (state.selectedPin) state.cancelWire();
     else {
@@ -133,9 +140,12 @@ export function CircuitCanvas() {
   }
 
   const getNodeValue = (deviceId: string, pinId: string): string | null => {
-    const result = useStore.getState().simResult;
-    if (!result) return null;
-    return result.final_nodes[`${deviceId}.${pinId}`] || null;
+    const state = useStore.getState();
+    if (!state.simResult) return null;
+    if (playbackTime >= 0) {
+      return state.getNodeValueAt(deviceId, pinId, playbackTime);
+    }
+    return state.simResult.final_nodes[`${deviceId}.${pinId}`] || null;
   };
 
   const signalColor = (v: string): string => {
@@ -161,32 +171,44 @@ export function CircuitCanvas() {
     { id: 'G', x1: 6, y1: 22, x2: 32, y2: 22 },
   ];
 
-  function wirePath(fx: number, fy: number, tx: number, ty: number): string {
-    const midX = (fx + tx) / 2;
-    return `M ${fx} ${fy} C ${midX} ${fy}, ${midX} ${ty}, ${tx} ${ty}`;
+  function wireOffset(wire: { id: string; from: WireEndpoint; to: WireEndpoint }): number {
+    const key = [wire.from.device, wire.to.device].sort().join('::');
+    const group = circuit.wires
+      .filter(w => [w.from.device, w.to.device].sort().join('::') === key)
+      .map(w => w.id)
+      .sort();
+    const idx = Math.max(0, group.indexOf(wire.id));
+    return (idx - (group.length - 1) / 2) * 18;
   }
 
-  // Check if a wire endpoint can be connected (output -> input)
-  function checkConnection(from: WireEndpoint, to: WireEndpoint): 'ok' | 'invalid' | 'same' {
-    if (from.device === to.device && from.pin === to.pin) return 'same';
-    const fromDev = getDeviceById(from.device);
-    const toDev = getDeviceById(to.device);
-    if (!fromDev || !toDev) return 'invalid';
-    const fromPin = getPins(fromDev.type).find(p => p.id === from.pin);
-    const toPin = getPins(toDev.type).find(p => p.id === to.pin);
-    if (!fromPin || !toPin) return 'invalid';
-    const fromOut = fromPin.direction === 'output' || fromPin.direction === 'bidirectional';
-    const toIn = toPin.direction === 'input' || toPin.direction === 'bidirectional';
-    // Output-to-input is ok; input-to-output would be reversed
-    if (fromOut && toIn) return 'ok';
-    if (toIn && fromOut) return 'ok';
-    return 'invalid';
+  function wirePath(fx: number, fy: number, tx: number, ty: number, offset = 0): string {
+    const midX = (fx + tx) / 2 + offset;
+    return `M ${fx} ${fy} L ${midX} ${fy} L ${midX} ${ty} L ${tx} ${ty}`;
+  }
+
+  function selfWirePath(dev: DeviceInstance, fx: number, fy: number, tx: number, ty: number, offset = 0): string {
+    const h = deviceHeight(dev.type);
+    const topY = dev.y - h / 2;
+    const bottomY = dev.y + h / 2;
+    const routeY = Math.max(16, Math.min(fy, ty) - 36);
+    const loopY = routeY < topY - 8 ? routeY + offset : bottomY + 36 + offset;
+    const fromDir = fx >= dev.x ? 1 : -1;
+    const toDir = tx >= dev.x ? 1 : -1;
+    const fromX = fx + fromDir * (34 + Math.abs(offset) / 2);
+    const toX = tx + toDir * (34 + Math.abs(offset) / 2);
+    return `M ${fx} ${fy} L ${fromX} ${fy} L ${fromX} ${loopY} L ${toX} ${loopY} L ${toX} ${ty} L ${tx} ${ty}`;
   }
 
   return (
     <svg
       ref={svgRef}
-      style={{ flex: 1, background: '#11111b', cursor: dragging ? 'grabbing' : 'crosshair' }}
+      style={{
+        flex: '1 1 auto',
+        minWidth: 0,
+        minHeight: 0,
+        background: '#11111b',
+        cursor: dragging ? 'grabbing' : 'crosshair',
+      }}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onClick={handleCanvasClick}
@@ -218,22 +240,28 @@ export function CircuitCanvas() {
         const isHovered = w.id === hoveredWire;
         const strokeW = isSelected ? 3 : isHovered ? 3 : 2;
         const strokeC = isSelected ? '#f9e2af' : isHovered ? '#cba6f7' : '#89b4fa';
+        const offset = wireOffset(w);
+        const pathD = w.from.device === w.to.device
+          ? selfWirePath(fromDev, from.x, from.y, to.x, to.y, offset)
+          : wirePath(from.x, from.y, to.x, to.y, offset);
 
         return (
           <g key={w.id}>
             <path
-              d={wirePath(from.x, from.y, to.x, to.y)}
+              d={pathD}
               fill="none" stroke={strokeC} strokeWidth={strokeW}
+              strokeLinecap="square" strokeLinejoin="miter"
               style={{ cursor: 'pointer', transition: 'stroke-width 0.15s' }}
-              onClick={(e) => { e.stopPropagation(); selectWire(w.id); }}
+              onClick={(e) => { e.stopPropagation(); selectWire(w.id === selectedWireId ? null : w.id); }}
               onMouseEnter={() => setHoveredWire(w.id)}
               onMouseLeave={() => setHoveredWire(null)}
             />
             <path
-              d={wirePath(from.x, from.y, to.x, to.y)}
+              d={pathD}
               fill="none" stroke="transparent" strokeWidth={14}
+              strokeLinecap="square" strokeLinejoin="miter"
               style={{ cursor: 'pointer' }}
-              onClick={(e) => { e.stopPropagation(); selectWire(w.id); }}
+              onClick={(e) => { e.stopPropagation(); selectWire(w.id === selectedWireId ? null : w.id); }}
               onMouseEnter={() => setHoveredWire(w.id)}
               onMouseLeave={() => setHoveredWire(null)}
             />
@@ -252,6 +280,7 @@ export function CircuitCanvas() {
           <path
             d={wirePath(pos.x, pos.y, mousePos.x, mousePos.y)}
             fill="none" stroke="#f9e2af" strokeWidth={2} strokeDasharray="6,4"
+            strokeLinecap="square" strokeLinejoin="miter"
           />
         );
       })()}
@@ -287,8 +316,23 @@ export function CircuitCanvas() {
 
         return (
           <g key={dev.id}
+            data-testid={`device-${dev.id}`}
             transform={`translate(${dev.x - DEVICE_W / 2}, ${dev.y - h / 2})`}
             style={{ cursor: dragging?.id === dev.id ? 'grabbing' : 'grab' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              const currentSelectedDeviceId = useStore.getState().selectedDeviceId;
+              if (dev.id === currentSelectedDeviceId) {
+                selectDevice(null);
+              } else {
+                selectDevice(dev.id);
+              }
+            }}
+            onMouseEnter={() => {
+              const def = devices.find(d => d.type === dev.type);
+              setTooltip({ dev, def, x: dev.x, y: dev.y - h / 2 - 8 });
+            }}
+            onMouseLeave={() => setTooltip(null)}
           >
             {/* Body */}
             <rect x={0} y={0} width={DEVICE_W} height={h} rx={6}
@@ -303,7 +347,7 @@ export function CircuitCanvas() {
               onMouseDown={(e) => handleDeviceMouseDown(e, dev.id)}
               style={{ pointerEvents: 'none' }}
             >
-              {def?.name || dev.type}
+              {(() => { const raw = def?.name || dev.type; const i = raw.search(/[一-鿿]/); return i > 0 ? raw.slice(i) : raw; })()}
             </text>
 
             {/* LED visual indicator */}
@@ -344,10 +388,39 @@ export function CircuitCanvas() {
 
             {/* SWITCH indicator */}
             {dev.type === 'SWITCH' && (
-              <text x={DEVICE_W / 2} y={h / 2 + 8} textAnchor="middle"
-                fill={dev.params?.value === 1 ? '#a6e3a1' : '#585b70'} fontSize={18} fontWeight={700}>
-                {dev.params?.value === 1 ? 'ON' : 'OFF'}
-              </text>
+              <g>
+                <rect
+                  x={DEVICE_W / 2 - 24} y={h / 2 - 2}
+                  width={48} height={20} rx={10}
+                  fill={dev.params?.value === 1 ? '#a6e3a120' : '#585b7020'}
+                  stroke={dev.params?.value === 1 ? '#a6e3a1' : '#585b70'}
+                  strokeWidth={1.5}
+                  style={{ cursor: 'pointer' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const cur = dev.params?.value === 1 ? 1 : 0;
+                    useStore.getState().updateDeviceParam(dev.id, 'value', cur ? 0 : 1);
+                  }}
+                />
+                <circle
+                  cx={dev.params?.value === 1 ? DEVICE_W / 2 + 14 : DEVICE_W / 2 - 14}
+                  cy={h / 2 + 8}
+                  r={7}
+                  fill={dev.params?.value === 1 ? '#a6e3a1' : '#585b70'}
+                  stroke={dev.params?.value === 1 ? '#a6e3a1' : '#585b70'}
+                  strokeWidth={1}
+                  style={{ cursor: 'pointer', transition: 'cx 0.15s' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const cur = dev.params?.value === 1 ? 1 : 0;
+                    useStore.getState().updateDeviceParam(dev.id, 'value', cur ? 0 : 1);
+                  }}
+                />
+                <text x={DEVICE_W / 2 - 28} y={h / 2 + 4} textAnchor="end"
+                  fill={dev.params?.value === 1 ? '#a6e3a1' : '#6c7086'} fontSize={11} fontWeight={600}>
+                  {dev.params?.value === 1 ? 'ON' : 'OFF'}
+                </text>
+              </g>
             )}
 
             {/* Pins */}
@@ -392,6 +465,39 @@ export function CircuitCanvas() {
           从左侧拖拽器件到此处开始搭建电路
         </text>
       )}
+
+      {/* Hover tooltip */}
+      {tooltip && (() => {
+        const d = tooltip.def;
+        if (!d) return null;
+        const lines: string[] = [d.name, `型号: ${d.type}`];
+        if (d.description) lines.push(d.description);
+        const pinCount = d.pins.length;
+        const inputs = d.pins.filter(p => p.direction === 'input').length;
+        const outputs = d.pins.filter(p => p.direction === 'output' || p.direction === 'bidirectional').length;
+        lines.push(`引脚: ${pinCount} (入${inputs} / 出${outputs})`);
+        const tw = Math.max(...lines.map(l => l.length)) * 7 + 20;
+        const th = lines.length * 16 + 16;
+        const tx = Math.min(tooltip.x, 2800);
+        const ty = Math.max(tooltip.y - th, 8);
+        return (
+          <g>
+            <rect x={tx} y={ty} width={tw} height={th} rx={6}
+              fill="#1e1e2e" stroke="#89b4fa" strokeWidth={1.5}
+              opacity={0.95}
+            />
+            {lines.map((l, i) => (
+              <text key={i} x={tx + 10} y={ty + 16 + i * 16}
+                fill={i === 0 ? '#cdd6f4' : '#a6adc8'}
+                fontSize={i === 0 ? 12 : 10}
+                fontWeight={i === 0 ? 600 : 400}
+              >
+                {l}
+              </text>
+            ))}
+          </g>
+        );
+      })()}
     </svg>
   );
 }

@@ -11,6 +11,10 @@ describe('Circuit Store', () => {
       simResult: null,
       simRunning: false,
       validationMessages: [],
+      playbackTime: -1,
+      playbackMaxTime: 0,
+      playbackActive: false,
+      waveformDeviceIds: [],
     });
   });
 
@@ -56,6 +60,17 @@ describe('Circuit Store', () => {
     expect(useStore.getState().circuit.wires).toHaveLength(0);
   });
 
+  it('removes a deleted device from oscilloscope selection', () => {
+    const store = useStore.getState();
+    store.addDevice('AND', 100, 100);
+    const devId = useStore.getState().circuit.devices[0].id;
+    store.toggleWaveformDevice(devId);
+    expect(useStore.getState().waveformDeviceIds).toEqual([devId]);
+
+    store.removeDevice(devId);
+    expect(useStore.getState().waveformDeviceIds).toEqual([]);
+  });
+
   it('moves device', () => {
     useStore.getState().addDevice('AND', 100, 100);
     const id = useStore.getState().circuit.devices[0].id;
@@ -90,6 +105,18 @@ describe('Circuit Store', () => {
     useStore.getState().selectWire('w1');
     expect(useStore.getState().selectedWireId).toBe('w1');
     expect(useStore.getState().selectedDeviceId).toBeNull();
+  });
+
+  it('toggles devices in the oscilloscope selection', () => {
+    const store = useStore.getState();
+    store.toggleWaveformDevice('d1');
+    expect(useStore.getState().waveformDeviceIds).toEqual(['d1']);
+
+    store.toggleWaveformDevice('d2');
+    expect(useStore.getState().waveformDeviceIds).toEqual(['d1', 'd2']);
+
+    store.toggleWaveformDevice('d1');
+    expect(useStore.getState().waveformDeviceIds).toEqual(['d2']);
   });
 
   it('deleteSelected removes selected device', () => {
@@ -140,6 +167,29 @@ describe('Circuit Store', () => {
     expect(useStore.getState().circuit.wires).toHaveLength(1);
   });
 
+  it('allows feedback wires between different pins on the same device', () => {
+    useStore.getState().addDevice('SYNC_D_FF', 100, 100);
+    const id = useStore.getState().circuit.devices[0].id;
+    useStore.getState().startWire({ device: id, pin: 'Q' });
+    useStore.getState().completeWire({ device: id, pin: 'D' });
+
+    const { circuit, selectedPin } = useStore.getState();
+    expect(circuit.wires).toHaveLength(1);
+    expect(circuit.wires[0].from).toEqual({ device: id, pin: 'Q' });
+    expect(circuit.wires[0].to).toEqual({ device: id, pin: 'D' });
+    expect(selectedPin).toBeNull();
+  });
+
+  it('still cancels when completing a wire on the same exact pin', () => {
+    useStore.getState().addDevice('SYNC_D_FF', 100, 100);
+    const id = useStore.getState().circuit.devices[0].id;
+    useStore.getState().startWire({ device: id, pin: 'Q' });
+    useStore.getState().completeWire({ device: id, pin: 'Q' });
+
+    expect(useStore.getState().circuit.wires).toHaveLength(0);
+    expect(useStore.getState().selectedPin).toBeNull();
+  });
+
   it('cancels wire selection', () => {
     useStore.getState().addDevice('AND', 100, 100);
     const id = useStore.getState().circuit.devices[0].id;
@@ -157,5 +207,39 @@ describe('Circuit Store', () => {
     useStore.getState().resetSimulation();
     expect(useStore.getState().simResult).toBeNull();
     expect(useStore.getState().validationMessages).toHaveLength(0);
+  });
+
+  it('reads playback values from the connected LED input waveform', () => {
+    useStore.setState({
+      circuit: {
+        version: '1.0',
+        devices: [
+          { id: 'clk', type: 'CLOCK', x: 100, y: 100, params: { period: 2 } },
+          { id: 'led', type: 'LED', x: 300, y: 100, params: {} },
+        ],
+        wires: [
+          { id: 'w1', from: { device: 'clk', pin: 'OUT' }, to: { device: 'led', pin: 'IN' } },
+        ],
+      },
+      simResult: {
+        status: 'ok',
+        errors: [],
+        warnings: [],
+        final_nodes: { 'clk.OUT': '1', 'led.IN': '1' },
+        waveform: {
+          time_unit: 'tick',
+          signals: [
+            { id: '0', name: 'OUT', values: [{ t: 0, v: 'Z' }] },
+            { id: '1', name: 'IN', values: [{ t: 0, v: '1' }, { t: 1, v: '0' }, { t: 2, v: '1' }] },
+          ],
+        },
+        ticks_elapsed: 2,
+        events_processed: 2,
+      },
+    });
+
+    expect(useStore.getState().getNodeValueAt('led', 'IN', 0)).toBe('1');
+    expect(useStore.getState().getNodeValueAt('led', 'IN', 1)).toBe('0');
+    expect(useStore.getState().getNodeValueAt('led', 'IN', 2)).toBe('1');
   });
 });

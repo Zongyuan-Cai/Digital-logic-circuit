@@ -49,6 +49,31 @@ class TestSimulationRunBasic:
         assert "u1.Y" in data.get("final_nodes", {})
 
     @pytest.mark.anyio
+    async def test_run_vcc_not_led_chain(self, async_client):
+        """A front-end-buildable VCC -> NOT -> LED circuit should simulate correctly."""
+        payload = {
+            "devices": [
+                {"id": "v", "type": "VCC", "x": 100, "y": 100, "params": {"delay": 1}},
+                {"id": "n", "type": "NOT", "x": 220, "y": 100, "params": {"delay": 1}},
+                {"id": "led", "type": "LED", "x": 340, "y": 100, "params": {"delay": 1}},
+            ],
+            "wires": [
+                {"id": "w1", "from": {"device": "v", "pin": "OUT"}, "to": {"device": "n", "pin": "I"}},
+                {"id": "w2", "from": {"device": "n", "pin": "Y"}, "to": {"device": "led", "pin": "IN"}},
+            ],
+        }
+        response = await async_client.post("/api/simulations/run", json={
+            "circuit": payload,
+            "options": {"max_ticks": 10, "record_all": True},
+        })
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "ok"
+        assert data["final_nodes"]["v.OUT"] == "1"
+        assert data["final_nodes"]["n.Y"] == "0"
+        assert data["final_nodes"]["led.IN"] == "0"
+
+    @pytest.mark.anyio
     async def test_run_decoder_chip(self, async_client):
         """Running a 74LS138 decoder should work."""
         payload = {

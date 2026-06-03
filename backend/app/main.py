@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Ensure the C++ build directory is on path for logic_sim imports
 _BUILD_DIR = os.path.join(
-    os.path.dirname(__file__), "..", "..", "build", "sim-core"
+    os.path.dirname(__file__), "..", "..", "build"
 )
 if os.path.isdir(_BUILD_DIR):
     sys.path.insert(0, _BUILD_DIR)

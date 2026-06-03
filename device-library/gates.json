@@ -1,106 +1,246 @@
 [
   {
     "type": "AND",
-    "name": "与门 (AND Gate)",
+    "name": "与门",
     "category": "gate",
     "family": "basic",
     "description": "逻辑与门。任一输入为0则输出0；全1输出1。",
     "pins": [
-      { "id": "I0", "name": "I0", "direction": "input", "role": "data", "active": "high" },
-      { "id": "I1", "name": "I1", "direction": "input", "role": "data", "active": "high" }
+      {
+        "id": "I0",
+        "name": "I0",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "I1",
+        "name": "I1",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Y", "name": "Y", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Y",
+        "name": "Y",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "inputs": 2 }
+    "params": {
+      "delay": 1,
+      "inputs": 2
+    }
   },
   {
     "type": "OR",
-    "name": "或门 (OR Gate)",
+    "name": "或门",
     "category": "gate",
     "family": "basic",
     "description": "逻辑或门。任一输入为1则输出1；全0输出0。",
     "pins": [
-      { "id": "I0", "name": "I0", "direction": "input", "role": "data", "active": "high" },
-      { "id": "I1", "name": "I1", "direction": "input", "role": "data", "active": "high" }
+      {
+        "id": "I0",
+        "name": "I0",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "I1",
+        "name": "I1",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Y", "name": "Y", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Y",
+        "name": "Y",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "inputs": 2 }
+    "params": {
+      "delay": 1,
+      "inputs": 2
+    }
   },
   {
     "type": "NOT",
-    "name": "非门 (NOT Gate / Inverter)",
+    "name": "非门",
     "category": "gate",
     "family": "basic",
     "description": "逻辑非门（反相器）。输入0输出1，输入1输出0。",
     "pins": [
-      { "id": "I", "name": "I", "direction": "input", "role": "data", "active": "high" }
+      {
+        "id": "I",
+        "name": "I",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Y", "name": "Y", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Y",
+        "name": "Y",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1 }
+    "params": {
+      "delay": 1
+    }
   },
   {
     "type": "NAND",
-    "name": "与非门 (NAND Gate)",
+    "name": "与非门",
     "category": "gate",
     "family": "basic",
     "description": "逻辑与非门。AND后取反。任一输入为0则输出1；全1输出0。",
     "pins": [
-      { "id": "I0", "name": "I0", "direction": "input", "role": "data", "active": "high" },
-      { "id": "I1", "name": "I1", "direction": "input", "role": "data", "active": "high" }
+      {
+        "id": "I0",
+        "name": "I0",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "I1",
+        "name": "I1",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Y", "name": "Y", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Y",
+        "name": "Y",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "inputs": 2 }
+    "params": {
+      "delay": 1,
+      "inputs": 2
+    }
   },
   {
     "type": "NOR",
-    "name": "或非门 (NOR Gate)",
+    "name": "或非门",
     "category": "gate",
     "family": "basic",
     "description": "逻辑或非门。OR后取反。任一输入为1则输出0；全0输出1。",
     "pins": [
-      { "id": "I0", "name": "I0", "direction": "input", "role": "data", "active": "high" },
-      { "id": "I1", "name": "I1", "direction": "input", "role": "data", "active": "high" }
+      {
+        "id": "I0",
+        "name": "I0",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "I1",
+        "name": "I1",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Y", "name": "Y", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Y",
+        "name": "Y",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "inputs": 2 }
+    "params": {
+      "delay": 1,
+      "inputs": 2
+    }
   },
   {
     "type": "XOR",
-    "name": "异或门 (XOR Gate)",
+    "name": "异或门",
     "category": "gate",
     "family": "basic",
     "description": "逻辑异或门。输入奇偶校验：奇数个1输出1，偶数个1输出0。",
     "pins": [
-      { "id": "I0", "name": "I0", "direction": "input", "role": "data", "active": "high" },
-      { "id": "I1", "name": "I1", "direction": "input", "role": "data", "active": "high" }
+      {
+        "id": "I0",
+        "name": "I0",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "I1",
+        "name": "I1",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Y", "name": "Y", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Y",
+        "name": "Y",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "inputs": 2 }
+    "params": {
+      "delay": 1,
+      "inputs": 2
+    }
   },
   {
     "type": "XNOR",
-    "name": "同或门 (XNOR Gate)",
+    "name": "同或门",
     "category": "gate",
     "family": "basic",
     "description": "逻辑同或门。XOR后取反。输入相同时输出1，不同时输出0。",
     "pins": [
-      { "id": "I0", "name": "I0", "direction": "input", "role": "data", "active": "high" },
-      { "id": "I1", "name": "I1", "direction": "input", "role": "data", "active": "high" }
+      {
+        "id": "I0",
+        "name": "I0",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      },
+      {
+        "id": "I1",
+        "name": "I1",
+        "direction": "input",
+        "role": "data",
+        "active": "high"
+      }
     ],
     "output_pins": [
-      { "id": "Y", "name": "Y", "direction": "output", "role": "data", "active": "high" }
+      {
+        "id": "Y",
+        "name": "Y",
+        "direction": "output",
+        "role": "data",
+        "active": "high"
+      }
     ],
-    "params": { "delay": 1, "inputs": 2 }
+    "params": {
+      "delay": 1,
+      "inputs": 2
+    }
   }
 ]

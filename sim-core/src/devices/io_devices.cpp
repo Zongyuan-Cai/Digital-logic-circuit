@@ -56,7 +56,14 @@ void Clock::reset() {
 }
 
 std::map<std::string, SignalValue> Clock::eval(
-    const std::vector<Node>&, const std::string&) {
+    const std::vector<Node>&, const std::string& changed_pin) {
+    // Only advance tick on real event-driven calls (self-trigger from
+    // process_event), not during initialization's broadcast passes.
+    if (!changed_pin.empty()) {
+        int tick = get_param_int("_tick", 0);
+        set_param_int("_tick", tick + 1);
+    }
+
     int tick = get_param_int("_tick", 0);
     int period = get_param_int("period", 2);
     int duty_pct = get_param_int("duty_pct", 50);
@@ -73,7 +80,6 @@ std::map<std::string, SignalValue> Clock::eval(
     // If initial is 1, invert the output
     if (init) out = (out == SignalValue::ONE) ? SignalValue::ZERO : SignalValue::ONE;
 
-    set_param_int("_tick", tick + 1);
     return {{"OUT", out}};
 }
 

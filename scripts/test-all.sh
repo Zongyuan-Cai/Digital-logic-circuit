@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -12,7 +12,7 @@ echo "============================================"
 # Step 1: Configure and build C++ core + tests
 echo ""
 echo "[1/4] Configuring CMake..."
-cmake -S "$PROJECT_DIR/sim-core" -B "$BUILD_DIR" -G "Ninja" \
+cmake -S "$PROJECT_DIR/sim-core" -B "$BUILD_DIR" \
     -DCMAKE_CXX_COMPILER=g++ \
     -Dpybind11_DIR="$(python -c 'import pybind11; print(pybind11.get_cmake_dir())' 2>/dev/null || echo '')" \
     2>&1 | tail -5

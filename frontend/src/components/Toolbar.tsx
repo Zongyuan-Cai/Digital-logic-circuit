@@ -1,102 +1,72 @@
-import { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
-import { api } from '../api/client';
-import type { ProjectMeta } from '../types/circuit';
+import { getCanvasSvgRef } from './canvasExportRef';
+
+function exportPng() {
+  const svg = getCanvasSvgRef();
+  if (!svg) return;
+
+  const clone = svg.cloneNode(true) as SVGSVGElement;
+  const svgRect = svg.getBoundingClientRect();
+  clone.setAttribute('width', String(svgRect.width));
+  clone.setAttribute('height', String(svgRect.height));
+
+  const serializer = new XMLSerializer();
+  const svgStr = serializer.serializeToString(clone);
+  const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(svgBlob);
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = svgRect.width;
+    canvas.height = svgRect.height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#11111b';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const a = document.createElement('a');
+      a.download = 'circuit.png';
+      a.href = URL.createObjectURL(blob);
+      a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  };
+  img.src = url;
+}
 
 export function Toolbar() {
-  const { simRunning, simResult, runSimulation, resetSimulation, saveProject, loadProject, circuit } = useStore();
-  const [projectName, setProjectName] = useState('我的电路');
-  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
-  const [projectList, setProjectList] = useState<ProjectMeta[]>([]);
-  const [showList, setShowList] = useState(false);
+  const simRunning = useStore(s => s.simRunning);
+  const simResult = useStore(s => s.simResult);
+  const runSimulation = useStore(s => s.runSimulation);
+  const resetSimulation = useStore(s => s.resetSimulation);
+  const clearCanvas = useStore(s => s.clearCanvas);
+  const deviceCount = useStore(s => s.circuit.devices.length);
+  const wireCount = useStore(s => s.circuit.wires.length);
+  const playbackActive = useStore(s => s.playbackActive);
+  const playbackTime = useStore(s => s.playbackTime);
+  const playbackMaxTime = useStore(s => s.playbackMaxTime);
 
-  async function refreshList() {
-    try { setProjectList(await api.listProjects()); } catch { /* ignore */ }
-  }
-
-  useEffect(() => { refreshList(); }, []);
-
-  async function handleSave() {
-    if (currentProjectId) {
-      // Update existing
-      await api.updateProject(currentProjectId, { name: projectName, circuit });
-      setCurrentProjectId(currentProjectId);
-    } else {
-      const id = await saveProject(projectName);
-      setCurrentProjectId(id);
-    }
-    refreshList();
-  }
-
-  async function handleSaveAs() {
-    const id = await saveProject(projectName + ' (副本)');
-    setCurrentProjectId(id);
-    refreshList();
-  }
-
-  async function handleLoad(id: string) {
-    await loadProject(id);
-    setCurrentProjectId(id);
-    const proj = projectList.find(p => p.id === id);
-    if (proj) setProjectName(proj.name);
-    setShowList(false);
-  }
-
-  async function handleDelete(id: string) {
-    await api.deleteProject(id);
-    if (currentProjectId === id) setCurrentProjectId(null);
-    refreshList();
-  }
+  const statsText = simResult
+    ? playbackActive
+      ? `⏱ 仿真运行中 t=${playbackTime}/${playbackMaxTime}`
+      : `✅ 完成 | t: ${simResult.ticks_elapsed} | ev: ${simResult.events_processed}`
+    : `器件: ${deviceCount} | 连线: ${wireCount}`;
 
   return (
     <header style={styles.toolbar}>
       <span style={styles.logo}>🔌 数字逻辑电路仿真</span>
 
       <div style={styles.group}>
-        <input
-          style={styles.input}
-          value={projectName}
-          onChange={e => setProjectName(e.target.value)}
-          placeholder="工程名称"
-        />
-        <button style={styles.btn} onClick={handleSave} title={currentProjectId ? '保存到当前工程' : '创建新工程'}>
-          💾 {currentProjectId ? '保存' : '新建'}
+        <button style={styles.btn} onClick={exportPng} title="导出画布为PNG图片">
+          💾 保存图片
         </button>
-        {currentProjectId && (
-          <button style={styles.btn} onClick={handleSaveAs} title="另存为">📋 另存</button>
-        )}
-        <button style={styles.btn} onClick={() => { refreshList(); setShowList(!showList); }} title="工程列表">
-          📂 {showList ? '收起' : '打开'}
+        <button style={styles.btn} onClick={clearCanvas} title="清除画布">
+          🗑 清屏
         </button>
-        {currentProjectId && (
-          <span style={styles.savedMsg}>ID: {currentProjectId}</span>
-        )}
       </div>
-
-      {showList && (
-        <div style={styles.dropdown}>
-          <div style={styles.dropdownHeader}>
-            工程列表 ({projectList.length})
-            <button style={styles.smallBtn} onClick={() => setShowList(false)}>✕</button>
-          </div>
-          {projectList.length === 0 && (
-            <div style={{ padding: 8, fontSize: 11, color: '#6c7086' }}>暂无工程</div>
-          )}
-          {projectList.map(p => (
-            <div key={p.id} style={{
-              ...styles.dropdownItem,
-              background: p.id === currentProjectId ? '#313244' : 'transparent',
-            }}>
-              <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
-                {p.name}
-                <span style={{ color: '#6c7086', marginLeft: 6, fontSize: 9 }}>{p.id}</span>
-              </span>
-              <button style={styles.smallBtn} onClick={() => handleLoad(p.id)}>加载</button>
-              <button style={{ ...styles.smallBtn, color: '#f38ba8' }} onClick={() => handleDelete(p.id)}>🗑</button>
-            </div>
-          ))}
-        </div>
-      )}
 
       <div style={styles.spacer} />
 
@@ -104,21 +74,17 @@ export function Toolbar() {
         <button
           style={{ ...styles.btn, ...styles.runBtn }}
           onClick={runSimulation}
-          disabled={simRunning}
+          disabled={simRunning || playbackActive}
           title="运行仿真"
         >
-          {simRunning ? '⏳ 运行中...' : '▶ 运行'}
+          {simRunning ? '⏳ 计算中...' : '▶ 运行'}
         </button>
         <button style={styles.btn} onClick={resetSimulation} title="复位">
           🔄 复位
         </button>
       </div>
 
-      {simResult && (
-        <span style={styles.stats}>
-          ✅ {simResult.status} | ticks: {simResult.ticks_elapsed} | events: {simResult.events_processed}
-        </span>
-      )}
+      <span style={styles.stats}>{statsText}</span>
     </header>
   );
 }
@@ -142,31 +108,5 @@ const styles: Record<string, React.CSSProperties> = {
   runBtn: {
     background: '#a6e3a1', color: '#1e1e2e', borderColor: '#a6e3a1', fontWeight: 600,
   },
-  input: {
-    padding: '4px 8px', borderRadius: 4,
-    border: '1px solid #313244', background: '#181825',
-    color: '#cdd6f4', fontSize: 11, width: 120,
-  },
-  savedMsg: { fontSize: 10, color: '#a6e3a1' },
   stats: { fontSize: 11, color: '#a6adc8' },
-  smallBtn: {
-    padding: '1px 6px', fontSize: 10, borderRadius: 3,
-    border: '1px solid #45475a', background: '#313244',
-    color: '#cdd6f4', cursor: 'pointer',
-  },
-  dropdown: {
-    position: 'absolute' as const, top: 44, left: 280, zIndex: 100,
-    background: '#1e1e2e', border: '1px solid #45475a', borderRadius: 8,
-    minWidth: 300, maxHeight: 300, overflowY: 'auto' as const,
-    boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-  },
-  dropdownHeader: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '6px 10px', fontSize: 11, fontWeight: 600,
-    borderBottom: '1px solid #313244',
-  },
-  dropdownItem: {
-    display: 'flex', alignItems: 'center', gap: 6,
-    padding: '6px 10px', borderBottom: '1px solid #181825',
-  },
 };

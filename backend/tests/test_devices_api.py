@@ -10,12 +10,12 @@ class TestDeviceLibraryService:
         """Device library should load all 46 devices from JSON."""
         idx = device_library.index
         assert idx is not None
-        assert idx.total_devices == 46
+        assert idx.total_devices == 45
 
     def test_list_all_returns_devices(self, device_library):
         """list_all should return all device definitions."""
         all_devs = device_library.list_all()
-        assert len(all_devs) >= 46
+        assert len(all_devs) >= 45
 
     def test_filter_by_category(self, device_library):
         """list_all should filter by category."""
@@ -32,7 +32,7 @@ class TestDeviceLibraryService:
     def test_filter_by_chip(self, device_library):
         """list_all should filter chips."""
         chips = device_library.list_all(category="chip")
-        assert len(chips) >= 18  # Some may have aliases
+        assert len(chips) == 18
 
     def test_get_device_by_type(self, device_library):
         """get() should return device by type string."""
@@ -96,7 +96,7 @@ class TestDevicesAPI:
         response = await async_client.get("/api/devices")
         assert response.status_code == 200
         data = response.json()
-        assert len(data) >= 46
+        assert len(data) >= 45
 
     @pytest.mark.anyio
     async def test_get_devices_filtered(self, async_client):
@@ -127,7 +127,7 @@ class TestDevicesAPI:
         response = await async_client.get("/api/devices/index")
         assert response.status_code == 200
         data = response.json()
-        assert data["total_devices"] == 46
+        assert data["total_devices"] == 45
 
     @pytest.mark.anyio
     async def test_get_device_types(self, async_client):

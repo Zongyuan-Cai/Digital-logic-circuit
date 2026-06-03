@@ -198,6 +198,14 @@ void Circuit::rebuild() {
                     node_listeners_[ni].emplace_back(di, p.id);
                 }
             }
+            // Self-triggering devices (CLOCK) listen to their own output
+            // so they re-evaluate and generate the next clock edge
+            if (p.is_output() && p.role == "clock_out") {
+                int ni = dev->pin_node(p.id);
+                if (ni >= 0 && ni < static_cast<int>(nodes_.size())) {
+                    node_listeners_[ni].emplace_back(di, p.id);
+                }
+            }
         }
     }
 }

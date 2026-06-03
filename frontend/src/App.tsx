@@ -26,9 +26,12 @@ export default function App() {
         </div>
       )}
       <div style={styles.main}>
-        <DevicePanel />
+        <DevicePanel side="logic" />
         <CircuitCanvas />
-        <PropertyPanel />
+        <div style={styles.rightColumn}>
+          <DevicePanel side="io" />
+          <PropertyPanel />
+        </div>
       </div>
       <Oscilloscope />
     </div>
@@ -38,17 +41,29 @@ export default function App() {
 const styles: Record<string, React.CSSProperties> = {
   root: {
     display: 'flex', flexDirection: 'column',
-    height: '100vh', width: '100vw',
+    height: '100dvh', width: '100%',
     background: '#11111b', color: '#cdd6f4',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     overflow: 'hidden',
   },
   main: {
     display: 'flex', flex: 1,
+    minHeight: 0,
+    minWidth: 0,
+    overflow: 'hidden',
+  },
+  rightColumn: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: 240,
+    minWidth: 240,
+    flexShrink: 0,
+    minHeight: 0,
     overflow: 'hidden',
   },
   errors: {
     display: 'flex', flexDirection: 'column', gap: 2,
+    flexShrink: 0,
     padding: '4px 16px',
     background: '#181825',
     borderBottom: '1px solid #313244',
