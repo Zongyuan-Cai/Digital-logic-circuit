@@ -9,6 +9,7 @@
 #include "logic_sim/devices/gates.hpp"
 #include "logic_sim/devices/flip_flops.hpp"
 #include "logic_sim/devices/chips.hpp"
+#include "logic_sim/devices/io_devices.hpp"
 
 namespace py = pybind11;
 using namespace logic_sim;
@@ -28,6 +29,9 @@ std::unique_ptr<Device> create_device(const std::string& type, const std::string
     if (dev) return dev;
     // Try chips
     dev = create_chip(type, id);
+    if (dev) return dev;
+    // Try IO devices
+    dev = create_io_device(type, id);
     if (dev) return dev;
 
     throw std::runtime_error("Unknown device type: " + type);

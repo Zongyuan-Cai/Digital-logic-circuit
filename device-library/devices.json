@@ -4,12 +4,14 @@
   "files": {
     "gates": "gates.json",
     "flip_flops": "flip_flops.json",
-    "chips": "chips.json"
+    "chips": "chips.json",
+    "io_devices": "io_devices.json"
   },
   "categories": {
     "gate": "基本门电路",
     "flip_flop": "触发器与锁存器",
-    "chip": "PDF教学芯片（74系列）"
+    "chip": "PDF教学芯片（74系列）",
+    "io": "输入输出器件"
   },
   "families": {
     "basic": "基本门电路",
@@ -18,12 +20,16 @@
     "master_slave": "主从触发器",
     "edge": "边沿触发器",
     "74": "74系列标准",
-    "74LS": "74LS系列低功耗肖特基"
+    "74LS": "74LS系列低功耗肖特基",
+    "power": "电源/常量",
+    "input": "输入器件",
+    "output": "输出/显示器件"
   },
   "device_count": {
     "gates": 7,
     "flip_flops": 14,
-    "chips": 18
+    "chips": 18,
+    "io_devices": 7
   },
-  "total_devices": 39
+  "total_devices": 46
 }

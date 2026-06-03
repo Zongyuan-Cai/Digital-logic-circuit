@@ -1,35 +1,47 @@
-/* SVG circuit canvas with drag-and-drop and wiring */
-
-import { useRef, useCallback } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import type { DeviceInstance, PinDef, WireEndpoint } from '../types/circuit';
 
 const DEVICE_W = 140;
 const PIN_SPACING = 20;
 const PIN_RADIUS = 5;
+const SNAP = 20;
 
 export function CircuitCanvas() {
   const {
-    circuit, devices, selectedDeviceId, selectedPin,
-    selectDevice, addDevice,
+    circuit, devices, selectedDeviceId, selectedWireId, selectedPin,
+    selectDevice, selectWire, addDevice, moveDevice, deleteSelected,
     startWire, completeWire, cancelWire, removeWire,
   } = useStore();
 
   const svgRef = useRef<SVGSVGElement>(null);
+  const [dragging, setDragging] = useState<{ id: string; ox: number; oy: number } | null>(null);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+  const [hoveredWire, setHoveredWire] = useState<string | null>(null);
 
-  // Build a lookup: device type -> pin definitions
+  // Global keyboard handler
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        // Don't delete if user is typing in an input
+        if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
+        deleteSelected();
+      }
+      if (e.key === 'Escape') {
+        cancelWire();
+        selectDevice(null);
+        selectWire(null);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [deleteSelected, cancelWire, selectDevice, selectWire]);
+
   const pinDefs: Record<string, PinDef[]> = {};
-  for (const d of devices) {
-    pinDefs[d.type] = d.pins;
-  }
+  for (const d of devices) pinDefs[d.type] = d.pins;
 
-  function getPins(type: string): PinDef[] {
-    return pinDefs[type] || [];
-  }
-
-  function getDeviceById(id: string) {
-    return circuit.devices.find(d => d.id === id);
-  }
+  function getPins(type: string): PinDef[] { return pinDefs[type] || []; }
+  function getDeviceById(id: string) { return circuit.devices.find(d => d.id === id); }
 
   function deviceHeight(type: string): number {
     const pins = getPins(type);
@@ -47,77 +59,142 @@ export function CircuitCanvas() {
     const pinIdx = group.findIndex(p => p.id === pin.id);
     const h = deviceHeight(dev.type);
     const startY = dev.y - h / 2 + 30;
-    if (isInput) {
-      return { x: dev.x - DEVICE_W / 2, y: startY + pinIdx * PIN_SPACING };
-    }
+    if (isInput) return { x: dev.x - DEVICE_W / 2, y: startY + pinIdx * PIN_SPACING };
     return { x: dev.x + DEVICE_W / 2, y: startY + pinIdx * PIN_SPACING };
   }
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  function getSVGPoint(e: React.MouseEvent): { x: number; y: number } {
+    if (!svgRef.current) return { x: 0, y: 0 };
+    const rect = svgRef.current.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     const type = e.dataTransfer.getData('device-type');
     if (!type || !svgRef.current) return;
     const rect = svgRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    addDevice(type, x, y);
-  }, [addDevice]);
+    useStore.getState().addDevice(type, e.clientX - rect.left, e.clientY - rect.top);
+  }
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
+  function handleDragOver(e: React.DragEvent) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
-  }, []);
+  }
 
-  const handlePinClick = useCallback((e: React.MouseEvent, endpoint: WireEndpoint) => {
+  // --- Device dragging ---
+  function handleDeviceMouseDown(e: React.MouseEvent, devId: string) {
     e.stopPropagation();
-    if (selectedPin) {
+    selectDevice(devId);
+    const state = useStore.getState();
+    const dev = state.circuit.devices.find(d => d.id === devId);
+    if (!dev) return;
+    const pt = getSVGPoint(e);
+    setDragging({ id: devId, ox: pt.x - dev.x, oy: pt.y - dev.y });
+  }
+
+  function handleMouseMove(e: React.MouseEvent) {
+    const pt = getSVGPoint(e);
+    setMousePos(pt);
+    setDragging(d => {
+      if (!d) return null;
+      moveDevice(d.id, pt.x - d.ox, pt.y - d.oy);
+      return d;
+    });
+  }
+
+  function handleMouseUp() {
+    setDragging(null);
+  }
+
+  // --- Pin click for wiring ---
+  function handlePinClick(e: React.MouseEvent, endpoint: WireEndpoint) {
+    e.stopPropagation();
+    const state = useStore.getState();
+    if (state.selectedPin) {
+      const sp = state.selectedPin;
+      if (sp.device === endpoint.device && sp.pin === endpoint.pin) {
+        useStore.getState().cancelWire();
+        return;
+      }
       completeWire(endpoint);
     } else {
       startWire(endpoint);
     }
-  }, [selectedPin, startWire, completeWire]);
+  }
 
-  const handleCanvasClick = useCallback(() => {
-    selectDevice(null);
-    if (selectedPin) cancelWire();
-  }, [selectDevice, selectedPin, cancelWire]);
+  function handleCanvasClick(e: React.MouseEvent) {
+    const state = useStore.getState();
+    if (state.selectedPin) state.cancelWire();
+    else {
+      state.selectDevice(null);
+      state.selectWire(null);
+    }
+  }
 
   const getNodeValue = (deviceId: string, pinId: string): string | null => {
     const result = useStore.getState().simResult;
     if (!result) return null;
-    const key = `${deviceId}.${pinId}`;
-    return result.final_nodes[key] || null;
+    return result.final_nodes[`${deviceId}.${pinId}`] || null;
   };
 
   const signalColor = (v: string): string => {
-    switch (v) {
-      case '1': return '#a6e3a1';
-      case '0': return '#585b70';
-      case 'X': return '#f38ba8';
-      case 'Z': return '#89b4fa';
-      default: return '#6c7086';
-    }
+    switch (v) { case '1': return '#a6e3a1'; case '0': return '#585b70'; case 'X': return '#f38ba8'; case 'Z': return '#89b4fa'; default: return '#6c7086'; }
   };
 
-  // Compute wire paths
-  function wirePath(fromX: number, fromY: number, toX: number, toY: number): string {
-    const midX = (fromX + toX) / 2;
-    return `M ${fromX} ${fromY} C ${midX} ${fromY}, ${midX} ${toY}, ${toX} ${toY}`;
+  const ledFill = (v: string | null): string => {
+    if (!v) return '#313244';
+    switch (v) { case '1': return '#a6e3a1'; case '0': return '#313244'; case 'X': return '#f38ba8'; case 'Z': return '#89b4fa'; default: return '#313244'; }
+  };
+  const ledLabel = (v: string | null): string => {
+    if (!v) return '?';
+    switch (v) { case '1': return '●'; case '0': return '○'; case 'X': return 'X'; case 'Z': return 'Z'; default: return '?'; }
+  };
+  const segmentOn = (v: string | null): boolean => v === '1';
+  const segs7: { id: string; x1: number; y1: number; x2: number; y2: number }[] = [
+    { id: 'A', x1: 6, y1: 4, x2: 32, y2: 4 },
+    { id: 'B', x1: 32, y1: 6, x2: 32, y2: 22 },
+    { id: 'C', x1: 32, y1: 24, x2: 32, y2: 40 },
+    { id: 'D', x1: 6, y1: 40, x2: 32, y2: 40 },
+    { id: 'E', x1: 4, y1: 24, x2: 4, y2: 40 },
+    { id: 'F', x1: 4, y1: 6, x2: 4, y2: 22 },
+    { id: 'G', x1: 6, y1: 22, x2: 32, y2: 22 },
+  ];
+
+  function wirePath(fx: number, fy: number, tx: number, ty: number): string {
+    const midX = (fx + tx) / 2;
+    return `M ${fx} ${fy} C ${midX} ${fy}, ${midX} ${ty}, ${tx} ${ty}`;
+  }
+
+  // Check if a wire endpoint can be connected (output -> input)
+  function checkConnection(from: WireEndpoint, to: WireEndpoint): 'ok' | 'invalid' | 'same' {
+    if (from.device === to.device && from.pin === to.pin) return 'same';
+    const fromDev = getDeviceById(from.device);
+    const toDev = getDeviceById(to.device);
+    if (!fromDev || !toDev) return 'invalid';
+    const fromPin = getPins(fromDev.type).find(p => p.id === from.pin);
+    const toPin = getPins(toDev.type).find(p => p.id === to.pin);
+    if (!fromPin || !toPin) return 'invalid';
+    const fromOut = fromPin.direction === 'output' || fromPin.direction === 'bidirectional';
+    const toIn = toPin.direction === 'input' || toPin.direction === 'bidirectional';
+    // Output-to-input is ok; input-to-output would be reversed
+    if (fromOut && toIn) return 'ok';
+    if (toIn && fromOut) return 'ok';
+    return 'invalid';
   }
 
   return (
     <svg
       ref={svgRef}
-      style={{ flex: 1, background: '#11111b', cursor: 'crosshair' }}
+      style={{ flex: 1, background: '#11111b', cursor: dragging ? 'grabbing' : 'crosshair' }}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onClick={handleCanvasClick}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
     >
-      <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX={9} refY={5} markerWidth={6} markerHeight={6} orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="#89b4fa" />
-        </marker>
-      </defs>
+      <defs />
 
       {/* Grid */}
       {Array.from({ length: 40 }, (_, i) => (
@@ -132,50 +209,59 @@ export function CircuitCanvas() {
         const fromDev = getDeviceById(w.from.device);
         const toDev = getDeviceById(w.to.device);
         if (!fromDev || !toDev) return null;
-        const fromPins = getPins(getDeviceById(w.from.device)?.type || '');
-        const toPins = getPins(getDeviceById(w.to.device)?.type || '');
-        const fromPin = fromPins.find(p => p.id === w.from.pin);
-        const toPin = toPins.find(p => p.id === w.to.pin);
+        const fromPin = getPins(fromDev.type).find(p => p.id === w.from.pin);
+        const toPin = getPins(toDev.type).find(p => p.id === w.to.pin);
         if (!fromPin || !toPin) return null;
         const from = pinPosition(fromDev, fromPin);
         const to = pinPosition(toDev, toPin);
+        const isSelected = w.id === selectedWireId;
+        const isHovered = w.id === hoveredWire;
+        const strokeW = isSelected ? 3 : isHovered ? 3 : 2;
+        const strokeC = isSelected ? '#f9e2af' : isHovered ? '#cba6f7' : '#89b4fa';
+
         return (
           <g key={w.id}>
             <path
               d={wirePath(from.x, from.y, to.x, to.y)}
-              fill="none"
-              stroke={selectedPin ? '#585b70' : '#89b4fa'}
-              strokeWidth={2}
-              markerEnd="url(#arrow)"
-              style={{ cursor: 'pointer' }}
-              onClick={(e) => { e.stopPropagation(); removeWire(w.id); }}
+              fill="none" stroke={strokeC} strokeWidth={strokeW}
+              style={{ cursor: 'pointer', transition: 'stroke-width 0.15s' }}
+              onClick={(e) => { e.stopPropagation(); selectWire(w.id); }}
+              onMouseEnter={() => setHoveredWire(w.id)}
+              onMouseLeave={() => setHoveredWire(null)}
             />
-            {/* Invisible wider path for easier clicking */}
             <path
               d={wirePath(from.x, from.y, to.x, to.y)}
-              fill="none"
-              stroke="transparent"
-              strokeWidth={12}
+              fill="none" stroke="transparent" strokeWidth={14}
               style={{ cursor: 'pointer' }}
-              onClick={(e) => { e.stopPropagation(); removeWire(w.id); }}
+              onClick={(e) => { e.stopPropagation(); selectWire(w.id); }}
+              onMouseEnter={() => setHoveredWire(w.id)}
+              onMouseLeave={() => setHoveredWire(null)}
             />
           </g>
         );
       })}
 
-      {/* Temporary wire being drawn */}
-      {selectedPin && (() => {
+      {/* Temp wire following mouse */}
+      {selectedPin && mousePos && (() => {
         const dev = getDeviceById(selectedPin.device);
         if (!dev) return null;
-        const pins = getPins(dev.type);
-        const pin = pins.find(p => p.id === selectedPin.pin);
+        const pin = getPins(dev.type).find(p => p.id === selectedPin.pin);
         if (!pin) return null;
         const pos = pinPosition(dev, pin);
         return (
-          <line x1={pos.x} y1={pos.y} x2={pos.x + 100} y2={pos.y}
-            stroke="#f9e2af" strokeWidth={2} strokeDasharray="5,5" />
+          <path
+            d={wirePath(pos.x, pos.y, mousePos.x, mousePos.y)}
+            fill="none" stroke="#f9e2af" strokeWidth={2} strokeDasharray="6,4"
+          />
         );
       })()}
+
+      {/* Wiring hint */}
+      {selectedPin && (
+        <text x="50%" y={20} textAnchor="middle" fill="#f9e2af" fontSize={12}>
+          点击目标引脚完成连线 (Esc 取消)
+        </text>
+      )}
 
       {/* Devices */}
       {circuit.devices.map(dev => {
@@ -183,24 +269,86 @@ export function CircuitCanvas() {
         const isSelected = dev.id === selectedDeviceId;
         const pins = getPins(dev.type);
         const h = deviceHeight(dev.type);
+        const simResult = useStore.getState().simResult;
+
+        // Check for floating inputs
+        const floatingInputs: string[] = [];
+        if (simResult) {
+          for (const pin of pins) {
+            if (pin.direction === 'input') {
+              const wired = circuit.wires.some(w =>
+                (w.to.device === dev.id && w.to.pin === pin.id) ||
+                (w.from.device === dev.id && w.from.pin === pin.id)
+              );
+              if (!wired) floatingInputs.push(pin.id);
+            }
+          }
+        }
 
         return (
           <g key={dev.id}
             transform={`translate(${dev.x - DEVICE_W / 2}, ${dev.y - h / 2})`}
-            onClick={(e) => { e.stopPropagation(); selectDevice(dev.id); }}
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: dragging?.id === dev.id ? 'grabbing' : 'grab' }}
           >
             {/* Body */}
             <rect x={0} y={0} width={DEVICE_W} height={h} rx={6}
               fill={isSelected ? '#313244' : '#1e1e2e'}
               stroke={isSelected ? '#89b4fa' : '#45475a'}
               strokeWidth={isSelected ? 2 : 1}
+              onMouseDown={(e) => handleDeviceMouseDown(e, dev.id)}
             />
             {/* Title */}
             <text x={DEVICE_W / 2} y={18} textAnchor="middle"
-              fill="#cdd6f4" fontSize={11} fontWeight={600}>
+              fill="#cdd6f4" fontSize={11} fontWeight={600}
+              onMouseDown={(e) => handleDeviceMouseDown(e, dev.id)}
+              style={{ pointerEvents: 'none' }}
+            >
               {def?.name || dev.type}
             </text>
+
+            {/* LED visual indicator */}
+            {dev.type === 'LED' && (
+              <g>
+                <circle cx={DEVICE_W / 2} cy={h / 2 + 10} r={14}
+                  fill={ledFill(getNodeValue(dev.id, 'IN'))}
+                  stroke="#45475a" strokeWidth={1.5}
+                />
+                <text x={DEVICE_W / 2} y={h / 2 + 14} textAnchor="middle"
+                  fill="#1e1e2e" fontSize={8} fontWeight={700}>
+                  {ledLabel(getNodeValue(dev.id, 'IN'))}
+                </text>
+              </g>
+            )}
+
+            {/* 7-segment visual */}
+            {dev.type === 'SEVEN_SEGMENT' && (
+              <g transform={`translate(${DEVICE_W / 2 - 20}, ${h / 2 - 22})`}>
+                <rect x={0} y={0} width={40} height={48} rx={2} fill="#11111b" stroke="#313244" strokeWidth={0.5} />
+                {segs7.map(s => {
+                  const on = segmentOn(getNodeValue(dev.id, s.id));
+                  return (
+                    <line key={s.id} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
+                      stroke={on ? '#a6e3a1' : '#1e1e2e'} strokeWidth={3} strokeLinecap="round" />
+                  );
+                })}
+              </g>
+            )}
+
+            {/* VCC/GND output indicator */}
+            {(dev.type === 'VCC' || dev.type === 'GND') && (
+              <text x={DEVICE_W / 2} y={h / 2 + 8} textAnchor="middle"
+                fill={dev.type === 'VCC' ? '#a6e3a1' : '#585b70'} fontSize={18} fontWeight={700}>
+                {dev.type === 'VCC' ? '1' : '0'}
+              </text>
+            )}
+
+            {/* SWITCH indicator */}
+            {dev.type === 'SWITCH' && (
+              <text x={DEVICE_W / 2} y={h / 2 + 8} textAnchor="middle"
+                fill={dev.params?.value === 1 ? '#a6e3a1' : '#585b70'} fontSize={18} fontWeight={700}>
+                {dev.params?.value === 1 ? 'ON' : 'OFF'}
+              </text>
+            )}
 
             {/* Pins */}
             {pins.map((pin) => {
@@ -211,17 +359,17 @@ export function CircuitCanvas() {
               const px = isInput ? 0 : DEVICE_W;
               const py = 30 + pinIdx * PIN_SPACING;
               const val = getNodeValue(dev.id, pin.id);
+              const isFloating = floatingInputs.includes(pin.id);
+              const isPinSelected = selectedPin?.device === dev.id && selectedPin?.pin === pin.id;
 
               return (
                 <g key={pin.id} style={{ cursor: 'pointer' }}
                   onClick={(e) => handlePinClick(e, { device: dev.id, pin: pin.id })}>
-                  {/* Pin circle */}
                   <circle cx={px} cy={py} r={PIN_RADIUS}
-                    fill={val ? signalColor(val) : (selectedPin?.device === dev.id && selectedPin?.pin === pin.id ? '#f9e2af' : '#45475a')}
-                    stroke={isInput ? '#a6e3a1' : '#89b4fa'}
-                    strokeWidth={1.5}
+                    fill={val ? signalColor(val) : (isPinSelected ? '#f9e2af' : '#45475a')}
+                    stroke={isFloating ? '#f9e2af' : (isInput ? '#a6e3a1' : '#89b4fa')}
+                    strokeWidth={isFloating ? 2.5 : 1.5}
                   />
-                  {/* Label */}
                   <text
                     x={isInput ? px + 10 : px - 10}
                     y={py + 4}
@@ -229,8 +377,7 @@ export function CircuitCanvas() {
                     fill={pin.active === 'low' ? '#f38ba8' : '#a6adc8'}
                     fontSize={9}
                   >
-                    {pin.name}
-                    {pin.active === 'low' && '◌'}
+                    {pin.name}{pin.active === 'low' ? '◌' : ''}
                   </text>
                 </g>
               );
@@ -239,7 +386,7 @@ export function CircuitCanvas() {
         );
       })}
 
-      {/* Hint text */}
+      {/* Empty canvas hint */}
       {circuit.devices.length === 0 && (
         <text x="50%" y="50%" textAnchor="middle" fill="#585b70" fontSize={18}>
           从左侧拖拽器件到此处开始搭建电路

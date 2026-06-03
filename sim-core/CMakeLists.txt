@@ -20,6 +20,7 @@ set(SIM_CORE_HEADERS
     include/logic_sim/devices/gates.hpp
     include/logic_sim/devices/flip_flops.hpp
     include/logic_sim/devices/chips.hpp
+    include/logic_sim/devices/io_devices.hpp
 )
 
 set(SIM_CORE_SOURCES
@@ -33,6 +34,7 @@ set(SIM_CORE_SOURCES
     src/devices/gates.cpp
     src/devices/flip_flops.cpp
     src/devices/chips.cpp
+    src/devices/io_devices.cpp
 )
 
 add_library(sim_core STATIC ${SIM_CORE_SOURCES} ${SIM_CORE_HEADERS})

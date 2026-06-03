@@ -29,9 +29,9 @@ describe('App', () => {
     expect(elements.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders save button', () => {
+  it('renders save/new button', () => {
     render(<App />);
-    expect(screen.getByText(/保存/)).toBeTruthy();
+    expect(screen.getByText(/新建|保存/)).toBeTruthy();
   });
 
   it('renders canvas hint when empty', () => {

@@ -1,5 +1,3 @@
-/* Main application layout */
-
 import { DevicePanel } from './components/DevicePanel';
 import { CircuitCanvas } from './components/CircuitCanvas';
 import { Toolbar } from './components/Toolbar';
@@ -22,7 +20,7 @@ export default function App() {
               borderColor: m.severity === 'error' ? '#f38ba8' : '#f9e2af',
             }}>
               <strong>{m.severity === 'error' ? '❌' : '⚠️'} {m.message}</strong>
-              {m.detail && <span style={{ marginLeft: 8, opacity: 0.7 }}>{m.detail}</span>}
+              {m.detail && <span style={{ marginLeft: 8, opacity: 0.75, fontSize: 10 }}>{m.detail}</span>}
             </div>
           ))}
         </div>
@@ -50,15 +48,14 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: 'hidden',
   },
   errors: {
-    display: 'flex', flexDirection: 'column',
+    display: 'flex', flexDirection: 'column', gap: 2,
     padding: '4px 16px',
     background: '#181825',
     borderBottom: '1px solid #313244',
-    maxHeight: 100, overflowY: 'auto' as const,
+    maxHeight: 120, overflowY: 'auto' as const,
   },
   errorItem: {
-    padding: '4px 8px', margin: '2px 0',
-    borderRadius: 4, border: '1px solid',
+    padding: '4px 10px', borderRadius: 4, border: '1px solid',
     fontSize: 11,
   },
 };

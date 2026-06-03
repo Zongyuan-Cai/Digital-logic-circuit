@@ -33,7 +33,7 @@ class DeviceLibraryService:
             self._index = DeviceLibraryIndex(**raw)
 
         # Load each category file
-        for category_file in ["gates.json", "flip_flops.json", "chips.json"]:
+        for category_file in ["gates.json", "flip_flops.json", "chips.json", "io_devices.json"]:
             path = self._dir / category_file
             if not path.exists():
                 continue

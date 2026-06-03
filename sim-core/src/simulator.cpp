@@ -257,13 +257,11 @@ void Simulator::record_final_nodes(SimResult& result) {
     if (!circuit_) return;
     for (auto& dev : circuit_->devices()) {
         for (auto& p : dev->pins()) {
-            if (p.is_output()) {
-                int ni = dev->pin_node(p.id);
-                if (ni >= 0) {
-                    std::string key = dev->id() + "." + p.id;
-                    result.final_nodes[key] =
-                        signal_to_string(circuit_->nodes()[ni].value);
-                }
+            int ni = dev->pin_node(p.id);
+            if (ni >= 0) {
+                std::string key = dev->id() + "." + p.id;
+                result.final_nodes[key] =
+                    signal_to_string(circuit_->nodes()[ni].value);
             }
         }
     }

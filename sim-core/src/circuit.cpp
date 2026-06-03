@@ -206,23 +206,21 @@ void Circuit::rebuild() {
 
 void Circuit::merge_nodes(int from_idx, int to_idx) {
     if (from_idx == to_idx) return;
-    // Move all pin references from 'from' to 'to'
-    auto& from = nodes_[from_idx];
-    auto& to = nodes_[to_idx];
 
-    for (auto& pr : from.pin_refs) {
-        auto* dev = device(pr.device_index);
-        if (dev) {
-            // Update the device's pin-to-node mapping
-            auto& pin = dev->pins()[pr.pin_index];
-            dev->connect_pin(pin.id, to_idx);
+    // Update all devices whose pins point to from_idx to point to to_idx instead.
+    // We iterate all devices because pin_refs may not be populated yet
+    // (merge_nodes can be called before rebuild()).
+    for (auto& dev : devices_) {
+        for (auto& pin : dev->pins()) {
+            int ni = dev->pin_node(pin.id);
+            if (ni == from_idx) {
+                dev->connect_pin(pin.id, to_idx);
+            }
         }
     }
 
-    // Mark the 'from' node as orphaned. It will remain in nodes_ as
-    // an empty net (no drivers, value defaults to Z) after rebuild()
-    // re-populates pin_refs from device pins. This wastes one slot
-    // but avoids shifting all node indices.
+    // Clear the orphaned node
+    auto& from = nodes_[from_idx];
     from.pin_refs.clear();
     from.driver_indices.clear();
 }

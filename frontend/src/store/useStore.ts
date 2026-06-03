@@ -1,5 +1,3 @@
-/* Zustand state management for the circuit editor */
-
 import { create } from 'zustand';
 import type {
   DeviceDef, DeviceInstance, WireDef, WireEndpoint, CircuitDef,
@@ -20,16 +18,14 @@ function syncNextId(circuit: CircuitDef): void {
 }
 
 export interface AppState {
-  // Device library
   devices: DeviceDef[];
   devicesLoaded: boolean;
 
-  // Circuit
   circuit: CircuitDef;
   selectedDeviceId: string | null;
-  selectedPin: WireEndpoint | null; // for wiring: first click
+  selectedWireId: string | null;
+  selectedPin: WireEndpoint | null;
 
-  // Simulation
   simResult: SimResult | null;
   simRunning: boolean;
   validationMessages: ValidationMessage[];
@@ -40,6 +36,9 @@ export interface AppState {
   moveDevice: (id: string, x: number, y: number) => void;
   removeDevice: (id: string) => void;
   selectDevice: (id: string | null) => void;
+  selectWire: (id: string | null) => void;
+  deleteSelected: () => void;
+  updateDeviceParam: (deviceId: string, key: string, value: unknown) => void;
   startWire: (endpoint: WireEndpoint) => void;
   completeWire: (endpoint: WireEndpoint) => void;
   removeWire: (id: string) => void;
@@ -47,7 +46,6 @@ export interface AppState {
   runSimulation: () => Promise<void>;
   resetSimulation: () => void;
 
-  // Persistence
   saveProject: (name: string) => Promise<string>;
   loadProject: (id: string) => Promise<void>;
 }
@@ -57,6 +55,7 @@ export const useStore = create<AppState>((set, get) => ({
   devicesLoaded: false,
   circuit: { version: '1.0', devices: [], wires: [] },
   selectedDeviceId: null,
+  selectedWireId: null,
   selectedPin: null,
   simResult: null,
   simRunning: false,
@@ -68,22 +67,23 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   addDevice: (type, x, y) => {
-    const dev: DeviceInstance = { id: uid(), type, x, y, params: { delay: 1 } };
+    const rx = Math.round(x / 20) * 20;
+    const ry = Math.round(y / 20) * 20;
+    const dev: DeviceInstance = { id: uid(), type, x: rx, y: ry, params: { delay: 1 } };
     set(s => ({
-      circuit: {
-        ...s.circuit,
-        devices: [...s.circuit.devices, dev],
-      },
+      circuit: { ...s.circuit, devices: [...s.circuit.devices, dev] },
       simResult: null,
     }));
   },
 
   moveDevice: (id, x, y) => {
+    const rx = Math.round(x / 20) * 20;
+    const ry = Math.round(y / 20) * 20;
     set(s => ({
       circuit: {
         ...s.circuit,
         devices: s.circuit.devices.map(d =>
-          d.id === id ? { ...d, x, y } : d
+          d.id === id ? { ...d, x: rx, y: ry } : d
         ),
       },
     }));
@@ -104,7 +104,31 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   selectDevice: (id) => {
-    set({ selectedDeviceId: id });
+    set({ selectedDeviceId: id, selectedWireId: null });
+  },
+
+  selectWire: (id) => {
+    set({ selectedWireId: id, selectedDeviceId: null });
+  },
+
+  deleteSelected: () => {
+    const { selectedDeviceId, selectedWireId, removeDevice, removeWire } = get();
+    if (selectedDeviceId) removeDevice(selectedDeviceId);
+    if (selectedWireId) removeWire(selectedWireId);
+  },
+
+  updateDeviceParam: (deviceId: string, key: string, value: unknown) => {
+    set(s => ({
+      circuit: {
+        ...s.circuit,
+        devices: s.circuit.devices.map(d =>
+          d.id === deviceId
+            ? { ...d, params: { ...d.params, [key]: value } }
+            : d
+        ),
+      },
+      simResult: null,
+    }));
   },
 
   startWire: (endpoint) => {
@@ -118,7 +142,6 @@ export const useStore = create<AppState>((set, get) => ({
       set({ selectedPin: null });
       return;
     }
-    // Avoid duplicate wires
     const exists = circuit.wires.some(w =>
       (w.from.device === selectedPin.device && w.from.pin === selectedPin.pin &&
        w.to.device === endpoint.device && w.to.pin === endpoint.pin) ||
@@ -139,10 +162,8 @@ export const useStore = create<AppState>((set, get) => ({
 
   removeWire: (id) => {
     set(s => ({
-      circuit: {
-        ...s.circuit,
-        wires: s.circuit.wires.filter(w => w.id !== id),
-      },
+      circuit: { ...s.circuit, wires: s.circuit.wires.filter(w => w.id !== id) },
+      selectedWireId: s.selectedWireId === id ? null : s.selectedWireId,
       simResult: null,
     }));
   },
@@ -165,7 +186,15 @@ export const useStore = create<AppState>((set, get) => ({
         record_all: true,
         default_delay: 1,
       });
-      set({ simResult: result, simRunning: false, validationMessages: [] });
+      // Merge validation warnings into messages for display
+      const simWarnings: ValidationMessage[] = [];
+      for (const w of validation.warnings) {
+        simWarnings.push({ severity: 'warning', message: w.message, detail: w.detail });
+      }
+      for (const w of result.warnings) {
+        simWarnings.push({ severity: 'warning', message: w, detail: '' });
+      }
+      set({ simResult: result, simRunning: false, validationMessages: simWarnings });
     } catch (e: unknown) {
       set({
         simRunning: false,
@@ -184,7 +213,6 @@ export const useStore = create<AppState>((set, get) => ({
 
   saveProject: async (name: string) => {
     const { circuit } = get();
-    // Create project first
     const meta = await api.createProject(name);
     await api.updateProject(meta.id, { circuit });
     return meta.id;
