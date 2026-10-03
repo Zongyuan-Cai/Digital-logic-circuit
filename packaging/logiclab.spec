@@ -9,7 +9,8 @@ a = Analysis(
     pathex=[str(root), str(module_dir)],
     binaries=[],
     datas=[(str(root / "device-library"), "device-library"),
-           (str(root / "frontend" / "dist"), "frontend/dist")],
+           (str(root / "frontend" / "dist"), "frontend/dist"),
+           (os.environ["LOGIC_LAB_LICENSE_DIR"], "third-party-licenses")],
     hiddenimports=["logic_sim", "uvicorn.logging", "uvicorn.loops.asyncio", "uvicorn.protocols.http.h11_impl", "uvicorn.lifespan.on"],
     hookspath=[], runtime_hooks=[], excludes=["pytest", "httpx"], noarchive=False,
 )

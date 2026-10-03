@@ -2,18 +2,24 @@
     [string]$Python = '',
     [string]$Generator = 'Visual Studio 17 2022',
     [string]$InnoSetup = '',
-    [string]$Version = '1.0.0'
+    [string]$Version = ''
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'windows-common.ps1')
+$previousBuildDir = $env:LOGIC_SIM_BUILD_DIR
+$previousLicenseDir = $env:LOGIC_LAB_LICENSE_DIR
 try {
-    if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw 'Version must be major.minor.patch.' }
     Initialize-WindowsEnvironment -Python $Python -Generator $Generator
+    $runtimeVersion = [string](Invoke-Checked $script:VenvPython @('-c', 'from backend.app.runtime import VERSION; print(VERSION)') -Capture | Select-Object -Last 1)
+    if ($Version -and $Version -ne $runtimeVersion) { throw 'Installer version must match backend/app/runtime.py.' }
+    $Version = $runtimeVersion
+    if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw 'Version must be major.minor.patch.' }
     Invoke-Checked $script:VenvPython @('-m', 'pip', 'install', '-r', (Join-Path $script:ProjectRoot 'packaging/requirements.txt'))
     Invoke-Checked (Get-Command npm.cmd).Source @('run', 'build') -WorkingDirectory (Join-Path $script:ProjectRoot 'frontend')
     # Fail rather than ship a package with a missing/incompatible native core.
     $env:LOGIC_SIM_BUILD_DIR = $script:ModuleDir
     Invoke-Checked $script:VenvPython @('-c', 'import os,sys; sys.path.insert(0,os.environ["LOGIC_SIM_BUILD_DIR"]); import logic_sim; import tkinter; print(logic_sim.__file__)')
+    $env:LOGIC_LAB_LICENSE_DIR = [string](Invoke-Checked $script:VenvPython @((Join-Path $script:ProjectRoot 'packaging/collect_licenses.py'), $script:ProjectRoot) -Capture | Select-Object -Last 1)
     $dist = Join-Path $script:ProjectRoot 'dist'
     Invoke-Checked $script:VenvPython @('-m', 'PyInstaller', '--noconfirm', '--clean', '--distpath', $dist, '--workpath', (Join-Path $script:BuildDir 'pyinstaller'), (Join-Path $script:ProjectRoot 'packaging/logiclab.spec'))
     if (-not $InnoSetup) {
@@ -39,4 +45,7 @@ try {
 } catch {
     Write-Host "[ERROR] $($_.Exception.Message)" -ForegroundColor Red
     exit 1
+} finally {
+    $env:LOGIC_SIM_BUILD_DIR = $previousBuildDir
+    $env:LOGIC_LAB_LICENSE_DIR = $previousLicenseDir
 }
