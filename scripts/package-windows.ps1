@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$Python = '',
     [string]$Generator = 'Visual Studio 17 2022',
     [string]$InnoSetup = '',
