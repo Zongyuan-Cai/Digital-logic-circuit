@@ -27,4 +27,6 @@ data/
 .backend.log
 .frontend.log
 .pids/
+.logs/
+.venv-windows/
 .codex/

@@ -4,12 +4,17 @@ const BASE = '/api';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
+    signal: AbortSignal.timeout(30000),
     headers: { 'Content-Type': 'application/json' },
     ...options,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail?.message || err.detail || res.statusText);
+    const detail = err.detail;
+    const message = typeof detail === 'string' ? detail
+      : Array.isArray(detail) ? detail.map(item => item.msg ?? JSON.stringify(item)).join('; ')
+      : detail?.message ?? res.statusText;
+    throw new Error(message || `请求失败 (${res.status})`);
   }
   if (res.status === 204) return undefined as T;
   return res.json();

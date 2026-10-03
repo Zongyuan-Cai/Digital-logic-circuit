@@ -1,259 +1,82 @@
-/* Device library panel */
-
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
-import type { DeviceCategory } from '../types/circuit';
+import { displayName, FIXED_DEVICE_TYPES, matchesSearch } from '../lib/devices';
+import { DeviceGlyph } from './DeviceGlyph';
+import { Icon } from './Icon';
+import { getCanvasCenter } from './canvasExportRef';
+import type { DeviceDef } from '../types/circuit';
 
-// VCC, GND, CLOCK are fixed starter sources on the canvas.
-const ALWAYS_ON_CANVAS = new Set(['VCC', 'GND', 'CLOCK']);
-
-type FilterKey = DeviceCategory | 'all' | 'combinational_chip' | 'sequential_chip';
-
-const FILTER_BUTTONS: { key: FilterKey; label: string }[] = [
-  { key: 'all', label: '全部' },
-  { key: 'gate', label: '门电路' },
-  { key: 'flip_flop', label: '触发器' },
-  { key: 'combinational_chip', label: '组合逻辑芯片' },
-  { key: 'sequential_chip', label: '时序逻辑芯片' },
+const filters = [
+  { key: 'all', label: '全部' }, { key: 'gate', label: '门电路' }, { key: 'flip_flop', label: '触发器' },
+  { key: 'combinational', label: '组合芯片' }, { key: 'sequential', label: '时序芯片' },
 ];
-
-// Strip English type prefix from device name for Chinese-only display
-function displayName(d: { name: string; type: string }): string {
-  // Pattern: "TYPE Chinese Name" → "Chinese Name"
-  const idx = d.name.search(/[一-鿿]/);
-  if (idx > 0) return d.name.slice(idx);
-  // Fallback: if name starts with type, strip it
-  if (d.name.startsWith(d.type)) {
-    const rest = d.name.slice(d.type.length).trim();
-    if (rest) return rest;
-  }
-  return d.name;
+function groupName(device: DeviceDef) {
+  return device.category === 'chip' ? device.sub_category === 'sequential' ? '时序逻辑芯片' : '组合逻辑芯片'
+    : device.category === 'gate' ? '基本门电路' : device.category === 'flip_flop' ? '触发器与锁存器' : '输入输出';
 }
 
-// Map device category+sub_category to display group label
-function getGroupLabel(d: { category: DeviceCategory; sub_category?: string }): string {
-  if (d.category === 'chip') {
-    if (d.sub_category === 'combinational') return '组合逻辑芯片';
-    if (d.sub_category === 'sequential') return '时序逻辑芯片';
-  }
-  if (d.category === 'io') return '输入输出';
-  const found = FILTER_BUTTONS.find(c => c.key === d.category);
-  return found?.label || d.category;
-}
-
-const DEFAULT_WIDTH = 240;
-
-interface DevicePanelProps {
-  side?: 'logic' | 'io';
-}
-
-export function DevicePanel({ side = 'logic' }: DevicePanelProps) {
-  const { devices, devicesLoaded, loadDevices } = useStore();
-  const [filter, setFilter] = useState<FilterKey>('all');
+export function DevicePanel({ side = 'logic' }: { side?: 'logic' | 'io' }) {
+  const devices = useStore(s => s.devices);
+  const loaded = useStore(s => s.devicesLoaded);
+  const loading = useStore(s => s.devicesLoading);
+  const error = useStore(s => s.devicesError);
+  const loadDevices = useStore(s => s.loadDevices);
+  const addDevice = useStore(s => s.addDevice);
+  const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  const [width, setWidth] = useState(DEFAULT_WIDTH);
-  const resizing = useRef(false);
-  const panelWidth = side === 'io' ? '100%' : width;
+  const [width, setWidth] = useState<number | null>(null);
+  const [resizing, setResizing] = useState<{ x: number; width: number } | null>(null);
+  useEffect(() => { void loadDevices(); }, [loadDevices]);
 
-  useEffect(() => {
-    if (!devicesLoaded) loadDevices();
-  }, [devicesLoaded, loadDevices]);
-
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    resizing.current = true;
-    const startX = e.clientX;
-    const startW = width;
-    function onMove(ev: MouseEvent) {
-      const delta = ev.clientX - startX;
-      const maxWidth = Math.max(180, Math.min(360, window.innerWidth - 360));
-      const next = Math.max(180, Math.min(maxWidth, startW + delta));
-      setWidth(next);
-    }
-    function onUp() {
-      resizing.current = false;
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-    }
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  }, [width]);
-
-  const filtered = devices.filter(d => {
-    // Hide the fixed starter sources.
-    if (ALWAYS_ON_CANVAS.has(d.type)) return false;
-    if (side === 'io') return d.category === 'io' && matchesSearch(d, search);
-    if (d.category === 'io') return false;
-    if (filter === 'combinational_chip') return d.category === 'chip' && d.sub_category === 'combinational';
-    if (filter === 'sequential_chip') return d.category === 'chip' && d.sub_category === 'sequential';
-    if (filter !== 'all' && d.category !== filter) return false;
-    if (!matchesSearch(d, search)) return false;
-    return true;
+  const filtered = devices.filter(device => {
+    if (FIXED_DEVICE_TYPES.has(device.type) || !matchesSearch(device, search)) return false;
+    if (side === 'io') return device.category === 'io';
+    if (device.category === 'io') return false;
+    return filter === 'all' || device.category === filter || device.category === 'chip' && device.sub_category === filter;
   });
-
-  // Group by display label (chips split into 组合逻辑/时序逻辑)
-  const grouped: Record<string, typeof filtered> = {};
-  for (const d of filtered) {
-    const groupKey = getGroupLabel(d);
-    if (!grouped[groupKey]) grouped[groupKey] = [];
-    grouped[groupKey].push(d);
+  const groups = new Map<string, DeviceDef[]>();
+  for (const device of filtered) {
+    const name = groupName(device);
+    groups.set(name, [...(groups.get(name) ?? []), device]);
   }
-
-  function handleDragStart(e: React.DragEvent, type: string) {
-    e.dataTransfer.setData('device-type', type);
-    e.dataTransfer.effectAllowed = 'copy';
+  function add(type: string) {
+    const center = getCanvasCenter();
+    const offset = (useStore.getState().circuit.devices.length % 5) * 20;
+    addDevice(type, center.x + offset, center.y + offset);
   }
+  const deviceCard = (device: DeviceDef) => <button
+    key={device.type} className={`device-card category-${device.category}`} draggable
+    aria-label={`添加 ${device.type} ${displayName(device)}`} title={device.description}
+    onClick={() => add(device.type)}
+    onDragStart={event => { event.dataTransfer.setData('device-type', device.type); event.dataTransfer.effectAllowed = 'copy'; }}
+  >
+    <DeviceGlyph type={device.type} />
+    {side === 'logic' && <span className="device-model">{device.type.replaceAll('_', ' ')}</span>}
+    <span className="device-name">{displayName(device)}</span>
+    <span className="device-add"><Icon name="plus" size={12} /></span>
+  </button>;
 
-  const getColor = (cat: DeviceCategory): string => {
-    switch (cat) {
-      case 'gate': return '#4caf50';
-      case 'flip_flop': return '#ff9800';
-      case 'chip': return '#2196f3';
-      case 'io': return '#9e9e9e';
-      default: return '#9e9e9e';
-    }
-  };
-
-  return (
-    <aside style={{
-      ...styles.panel,
-      ...(side === 'io' ? styles.rightPanel : styles.leftPanel),
-      width: panelWidth,
-      minWidth: panelWidth,
-      ...(side === 'io' ? styles.ioPanel : {}),
-    }}>
-      <h3 style={styles.title}>{side === 'io' ? '输入输出' : '器件库'}</h3>
-      <input
-        style={styles.search}
-        placeholder="搜索器件..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-      />
-      {side === 'logic' && (
-        <div style={styles.filters}>
-          {FILTER_BUTTONS.map(c => (
-            <button
-              key={c.key}
-              style={{
-                ...styles.filterBtn,
-                ...(filter === c.key ? styles.filterBtnActive : {}),
-              }}
-              onClick={() => setFilter(c.key)}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
-      )}
-      <div style={styles.list}>
-        {Object.entries(grouped).map(([cat, devs]) => (
-          <div key={cat}>
-            <div
-              style={styles.catHeader}
-              onClick={() => setCollapsed(s => ({ ...s, [cat]: !s[cat] }))}
-            >
-              <span>{collapsed[cat] ? '▶' : '▼'}</span> {cat} ({devs.length})
-            </div>
-            {!collapsed[cat] && devs.map(d => (
-              <div
-                key={d.type}
-                draggable
-                onDragStart={e => handleDragStart(e, d.type)}
-                style={styles.deviceItem}
-                title={d.description}
-              >
-                <span style={{ ...styles.dot, background: getColor(d.category) }} />
-                <span style={styles.deviceName}>{displayName(d)}</span>
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-      {side === 'logic' && (
-        <div
-          style={styles.resizeHandle}
-          onMouseDown={onMouseDown}
-        />
-      )}
-    </aside>
-  );
+  return <aside className={`device-panel ${side === 'io' ? 'io-panel' : 'library-panel'}`} style={side === 'logic' && width ? { width } : undefined} aria-label={side === 'io' ? '输入输出器件' : '器件库'}>
+    <div className="panel-heading"><span><Icon name={side === 'io' ? 'sliders' : 'chip'} size={16} /><h2>{side === 'io' ? '输入输出' : '器件库'}</h2></span><span className="count-badge">{side === 'io' ? filtered.length : devices.filter(device => device.category !== 'io').length}</span></div>
+    {side === 'logic' && <>
+      <label className="search-field"><Icon name="search" size={15} /><input aria-label="搜索器件" placeholder="搜索名称、型号…" value={search} onChange={event => setSearch(event.target.value)} />{search && <button aria-label="清空搜索" onClick={() => setSearch('')}><Icon name="close" size={14} /></button>}</label>
+      <div className="library-filters" aria-label="器件分类">{filters.map(item => <button key={item.key} aria-pressed={filter === item.key} className={filter === item.key ? 'active' : ''} onClick={() => setFilter(item.key)}>{item.label}</button>)}</div>
+    </>}
+    <div className="device-list">
+      {loading && <div className="panel-message">正在加载器件库…</div>}
+      {error && <div className="panel-message error-message"><Icon name="warning" /><p>无法加载器件库</p><small>{error}</small><button className="button secondary" onClick={() => void loadDevices()}>重新加载</button></div>}
+      {loaded && !filtered.length && <div className="panel-message">没有匹配的器件<span>试试其他名称或分类</span></div>}
+      {Array.from(groups, ([name, group]) => <section key={name} className="device-group">
+        {side === 'logic' && <button className="group-heading" aria-expanded={!collapsed[name]} onClick={() => setCollapsed(state => ({ ...state, [name]: !state[name] }))}><Icon name="chevron" size={12} className={collapsed[name] ? '' : 'expanded'} /><span>{name}</span><small>{group.length}</small></button>}
+        {!collapsed[name] && <div className="device-grid">{group.map(deviceCard)}</div>}
+      </section>)}
+    </div>
+    {side === 'logic' && <div className="library-footnote"><Icon name="cursor" size={14} /><span>拖入画布，或点击添加器件</span></div>}
+    {side === 'logic' && <div className="library-resize" role="separator" aria-label="调整器件库宽度" aria-orientation="vertical" aria-valuenow={width ?? 256} aria-valuemin={200} aria-valuemax={360} tabIndex={0}
+      onPointerDown={event => { event.currentTarget.setPointerCapture?.(event.pointerId); setResizing({ x: event.clientX, width: event.currentTarget.parentElement?.getBoundingClientRect().width ?? 256 }); }}
+      onPointerMove={event => { if (resizing) setWidth(Math.max(200, Math.min(360, resizing.width + event.clientX - resizing.x))); }}
+      onPointerUp={() => setResizing(null)} onPointerCancel={() => setResizing(null)}
+      onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); setWidth(value => Math.max(200, Math.min(360, (value ?? 256) + (event.key === 'ArrowLeft' ? -20 : 20)))); } }} />}
+  </aside>;
 }
-
-function matchesSearch(d: { name: string; type: string }, search: string): boolean {
-  return !search || d.name.includes(search) || d.type.includes(search);
-}
-
-const styles: Record<string, React.CSSProperties> = {
-  panel: {
-    background: '#1e1e2e', color: '#cdd6f4',
-    display: 'flex', flexDirection: 'column',
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  leftPanel: {
-    borderRight: '1px solid #313244',
-  },
-  rightPanel: {
-    borderLeft: '1px solid #313244',
-  },
-  ioPanel: {
-    height: 260,
-    flexShrink: 0,
-    borderBottom: '1px solid #313244',
-  },
-  title: {
-    padding: '12px 16px', margin: 0,
-    fontSize: 15, fontWeight: 600,
-    borderBottom: '1px solid #313244',
-  },
-  search: {
-    margin: 8, padding: '6px 10px',
-    borderRadius: 4, border: '1px solid #313244',
-    background: '#181825', color: '#cdd6f4',
-    fontSize: 13,
-  },
-  filters: {
-    display: 'flex', gap: 4, padding: '0 8px 8px',
-    flexWrap: 'wrap',
-  },
-  filterBtn: {
-    padding: '3px 10px', fontSize: 12,
-    border: '1px solid #313244', borderRadius: 12,
-    background: '#181825', color: '#a6adc8',
-    cursor: 'pointer',
-  },
-  filterBtnActive: {
-    background: '#89b4fa', color: '#1e1e2e', borderColor: '#89b4fa',
-  },
-  list: {
-    flex: 1, overflowY: 'auto' as const,
-    padding: '0 8px 8px',
-  },
-  catHeader: {
-    padding: '6px 4px', fontSize: 12,
-    fontWeight: 600, color: '#a6adc8',
-    cursor: 'pointer', userSelect: 'none' as const,
-  },
-  deviceItem: {
-    display: 'flex', alignItems: 'center', gap: 8,
-    padding: '6px 8px', marginBottom: 2,
-    borderRadius: 4, cursor: 'grab',
-    fontSize: 13, background: '#181825',
-    border: '1px solid transparent',
-    transition: 'border-color 0.2s',
-  },
-  dot: {
-    width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-  },
-  deviceName: {
-    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const,
-  },
-  resizeHandle: {
-    position: 'absolute',
-    right: 0, top: 0, bottom: 0,
-    width: 4,
-    background: 'transparent',
-    transition: 'background 0.15s',
-  },
-};

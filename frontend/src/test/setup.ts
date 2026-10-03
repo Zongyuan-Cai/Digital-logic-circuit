@@ -10,3 +10,7 @@ globalThis.fetch = vi.fn(() =>
     text: () => Promise.resolve(''),
   } as Response)
 );
+
+HTMLDialogElement.prototype.showModal = function () { this.open = true; };
+HTMLDialogElement.prototype.close = function () { this.open = false; };
+Object.defineProperty(globalThis, 'PointerEvent', { value: MouseEvent, configurable: true });

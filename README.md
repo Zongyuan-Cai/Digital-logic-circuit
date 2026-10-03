@@ -15,6 +15,7 @@ An interactive circuit simulation platform for digital logic education. Build ci
 - **45 种器件** — 基本门电路、触发器/锁存器、74 系列芯片、I/O 交互器件
 - **电路校验** — 自动检测重复 ID、未知器件、输出冲突、浮空输入
 - **工程管理** — 保存/加载电路到 SQLite 数据库
+- **编辑工作台** — 缩放与平移、网格吸附、撤销/重做、快捷键与窄屏侧栏
 - **PNG 导出** — 一键导出电路图为图片
 
 ---
@@ -41,7 +42,7 @@ digital-logic-sim/
 │   │   ├── models/schemas.py     # Pydantic 数据模型 (18 类)
 │   │   ├── services/             # 器件库加载, C++ 仿真服务, 电路校验
 │   │   └── storage/              # SQLite 工程持久化
-│   ├── tests/                    # pytest 测试 (64 tests)
+│   ├── tests/                    # pytest 测试 (62 tests)
 │   └── requirements.txt
 │
 ├── frontend/                     # React + TypeScript 前端
@@ -50,13 +51,15 @@ digital-logic-sim/
 │   │   ├── components/
 │   │   │   ├── DevicePanel.tsx   # 可拖拽器件面板 (搜索/分类过滤/尺寸调节)
 │   │   │   ├── CircuitCanvas.tsx # SVG 电路画布 (网格/拖放/连线/信号着色)
-│   │   │   ├── Toolbar.tsx       # 工具栏 (运行/复位/清除/导出PNG/统计)
+│   │   │   ├── Toolbar.tsx       # 工程/撤销/运行/复位/PNG/帮助
 │   │   │   ├── PropertyPanel.tsx # 属性面板 (引脚表/信号值/参数编辑)
-│   │   │   └── Oscilloscope.tsx  # 数字示波器 (多通道/缩放/回放游标/时间轴)
-│   │   ├── store/useStore.ts     # Zustand 全局状态 (电路/仿真/回放/选区)
+│   │   │   ├── Oscilloscope.tsx  # 数字示波器 (多通道/缩放/回放游标/时间轴)
+│   │   │   └── ProjectDialog.tsx # 工程保存/打开/未保存提示
+│   │   ├── lib/                 # 器件/几何/信号/示例/导出领域逻辑
+│   │   ├── store/useStore.ts     # Zustand 状态 (电路/历史/工程/仿真/回放)
 │   │   ├── api/client.ts         # Fetch API 客户端
-│   │   └── types/circuit.ts      # TypeScript 类型定义
-│   ├── tests/                    # Vitest 测试 (30 tests)
+│   │   ├── types/circuit.ts      # TypeScript 类型定义
+│   │   └── test/                # Vitest 测试 (60 tests)
 │   └── package.json
 │
 ├── device-library/               # 器件元数据 (JSON)
@@ -67,7 +70,10 @@ digital-logic-sim/
 │   └── io_devices.json           # 6 I/O 器件
 │
 ├── scripts/test-all.sh           # 统一测试脚本 (C++ + Python 绑定)
+├── scripts/test-all.ps1          # Windows 全栈构建与测试
+├── scripts/windows-common.ps1    # Windows 依赖与进程管理
 ├── start.sh                      # 一键启动脚本 (后端 + 前端)
+├── start.cmd / start.ps1          # 原生 Windows 启动/设置/停止/状态
 ├── docs/                         # 设计文档
 └── data/projects.db              # SQLite 运行时数据库
 ```
@@ -152,18 +158,36 @@ digital-logic-sim/
 
 ### 环境要求 · Requirements
 
-- **OS**: Linux (Ubuntu 22.04+) / WSL2
-- **C++**: GCC 11+, CMake 3.16+
+- **OS**: Windows 10/11 x64 / Linux (Ubuntu 22.04+) / WSL2
+- **C++**: Windows 使用 Visual Studio 2022 C++ Build Tools + Windows SDK；Linux 使用 GCC 11+
+- **CMake**: Linux 3.18+；Windows 3.21+
 - **Python**: 3.10+
-- **Node.js**: 18+
+- **Node.js**: 推荐 24 LTS；也支持 20.19+ 或 22.13+，与当前前端依赖匹配
 
-### 一键启动 · One-Click Start
+### 原生 Windows 启动
+
+安装 64 位 Python、Node.js、CMake，以及 Visual Studio 2022 的“使用 C++ 的桌面开发”工作负载（含 MSVC 与 Windows SDK）；运行 C++ 测试还需要 Git。将项目放到本地磁盘，例如 `C:\work\logic-lab`，然后在 PowerShell 或 CMD 执行：
+
+```powershell
+.\start.cmd                 # 首次自动创建虚拟环境、安装依赖、编译并启动
+.\start.cmd -Setup          # 只准备环境与编译
+.\start.cmd -Status         # 查看服务状态
+.\start.cmd -Stop           # 停止此脚本启动的服务
+.\start.cmd -Rebuild        # 服务停止后，重新编译并启动
+.\start.cmd -Help
+```
+
+访问 `http://localhost:5173`。可通过 `-Python "C:\Python312\python.exe"` 指定解释器，通过 `-BackendPort 8001 -FrontendPort 5174` 更改端口，前端 API 代理自动使用对应后端端口。
+
+Windows 使用 `.venv-windows/`、`build/windows/` 和 `.logs/windows/`；启动时会验证 C++ 模块可导入，停止操作只处理带有效进程身份记录的服务。当前 `\\wsl$\...` 工作区应复制到本地磁盘后原生运行，复制时排除 `build/`、`frontend/node_modules/`、虚拟环境和进程记录；继续使用 WSL 时仍运行 `./start.sh`。完整说明见 [Windows 使用指南](docs/Windows使用指南.md)。
+
+### Linux / WSL 启动 · One-Click Start
 
 ```bash
 ./start.sh
 ```
 
-脚本会自动安装依赖、编译 C++ 核心、启动后端 (port 8000) 和前端 (port 5173)。
+脚本检查并安装后端和前端依赖，启动后端 (port 8000) 和前端 (port 5173)。C++ 核心需要先按下方步骤编译。
 访问 `http://localhost:5173` 即可使用。
 
 ```bash
@@ -207,12 +231,13 @@ npm run dev
 
 ## 使用流程 · Workflow
 
-1. **放置器件** — 从左侧面板拖拽门电路/芯片到画布，从右侧面板拖拽 I/O 器件
-2. **连线** — 点击器件引脚开始连线，再点击目标引脚完成
-3. **配置参数** — 选中 SWITCH 可切换 0/1，CLOCK 可设置周期和初值
-4. **运行仿真** — 点击 ▶ Run，C++ 引擎执行事件驱动仿真
-5. **观察结果** — 画布上信号线实时着色，属性面板显示各引脚值
-6. **分析波形** — 示波器显示多通道数字波形，可缩放、滚动、回放
+1. **开始实验** — 新建工程，或加载首页的半加器示例
+2. **放置器件** — 拖拽器件到画布，或点击器件卡片添加；窄屏通过“器件库”与“属性”打开侧栏
+3. **连线与配置** — 依次点击两个引脚连线；选中器件配置参数，开关也可直接在画布切换
+4. **编辑画布** — 滚轮缩放、空格加拖动平移，F 适应内容，Ctrl+Z 撤销
+5. **运行仿真** — 点击“运行仿真”或 Ctrl+Enter，观察画布与属性面板电平
+6. **分析波形** — 在属性面板将器件加入示波器；暂停、拖动时间滑块或点击波形查看特定时刻
+7. **保存实验** — 点击“保存工程”或 Ctrl+S，后续从“打开”恢复；可导出当前画布为 PNG
 
 ---
 
@@ -224,24 +249,26 @@ npm run dev
 ctest --test-dir build/sim-core --output-on-failure
 ```
 
-### Python 后端测试 (64 tests)
+### Python 后端测试 (62 tests)
 
 ```bash
 cd backend
 PYTHONPATH=../build/sim-core:. pytest tests/ -v
 ```
 
-### Python 绑定测试 (5 tests)
+### Python 绑定 smoke 测试 (6 checks)
 
 ```bash
 cd bindings/python
-PYTHONPATH=../../build/sim-core:. pytest tests/ -v
+PYTHONPATH=../../build/sim-core python3 tests/test_python_binding.py
 ```
 
-### 前端测试 (30 tests)
+### 前端检查与测试 (60 tests)
 
 ```bash
 cd frontend
+npm run build
+npm run lint
 npx vitest run
 ```
 
@@ -250,6 +277,20 @@ npx vitest run
 ```bash
 ./scripts/test-all.sh    # C++ + Python 绑定
 ```
+
+Windows 下（先停止开发服务）：
+
+```powershell
+.\scripts\test-all.ps1  # C++、Python 绑定、后端、前端及启动脚本回归
+```
+
+执行策略阻止直接运行 `.ps1` 时，可使用单次进程设置：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-all.ps1
+```
+
+`.github/workflows/windows.yml` 在 Windows runner 上执行全栈测试，并验收启动、Vite API 代理、真实仿真与停止流程。
 
 ---
 
@@ -269,12 +310,11 @@ npx vitest run
 | 状态管理 | Zustand 5 |
 | 画布渲染 | SVG (原生, 拖拽/连线/信号着色) |
 | 前端测试 | Vitest 4 + Testing Library + jsdom |
-| 样式方案 | CSS Modules + Catppuccin Mocha 配色 |
+| 样式方案 | 统一 CSS 变量、深色实验工作台、响应式侧栏 |
 
 ---
 
 ## 设计文档 · Design Docs
 
-- [完整设计文档](docs/数字逻辑电路仿真系统完整设计文档.md)
-- [门电路与芯片实现说明](docs/门电路与芯片实现说明.md)
-- [后端架构与技术说明](docs/后端架构与技术说明.md)
+- [项目梳理与前端重构](docs/项目梳理与前端重构.md) — 模块职责、数据链路、重构内容、操作方式与当前边界
+- [Windows 使用指南](docs/Windows使用指南.md) — 原生 Windows 依赖、启动、测试、路径与故障排查

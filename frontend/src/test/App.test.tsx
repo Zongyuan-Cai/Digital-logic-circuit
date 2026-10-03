@@ -1,5 +1,5 @@
 import { beforeEach, describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import App from '../App';
 import { useStore } from '../store/useStore';
 
@@ -20,43 +20,46 @@ describe('App', () => {
       selectedPin: null,
       simResult: null,
       simRunning: false,
+      devicesLoaded: true,
+      devicesLoading: false,
+      past: [], future: [],
       validationMessages: [],
     });
   });
 
-  it('renders toolbar with title', () => {
-    render(<App />);
+  it('renders toolbar with title', async () => {
+    await act(async () => { render(<App />); });
     expect(screen.getByText(/数字逻辑电路仿真/)).toBeTruthy();
   });
 
-  it('renders device panel', () => {
-    render(<App />);
-    expect(screen.getByText('器件库')).toBeTruthy();
+  it('renders device panel', async () => {
+    await act(async () => { render(<App />); });
+    expect(screen.getByRole('heading', { name: '器件库' })).toBeTruthy();
   });
 
-  it('renders property panel placeholder', () => {
-    render(<App />);
+  it('renders property panel placeholder', async () => {
+    await act(async () => { render(<App />); });
     expect(screen.getByText('属性面板')).toBeTruthy();
   });
 
-  it('renders oscilloscope', () => {
-    render(<App />);
-    expect(screen.getByText(/示波器/)).toBeTruthy();
+  it('renders oscilloscope', async () => {
+    await act(async () => { render(<App />); });
+    expect(screen.getByRole('heading', { name: '示波器' })).toBeTruthy();
   });
 
-  it('renders at least one run-related button', () => {
-    render(<App />);
+  it('renders at least one run-related button', async () => {
+    await act(async () => { render(<App />); });
     const elements = screen.getAllByText(/运行/);
     expect(elements.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders save/new button', () => {
-    render(<App />);
-    expect(screen.getByText(/新建|保存/)).toBeTruthy();
+  it('renders save/new button', async () => {
+    await act(async () => { render(<App />); });
+    expect(screen.getByRole('button', { name: '保存工程' })).toBeTruthy();
   });
 
-  it('starts with only the three fixed source devices on the canvas', () => {
-    render(<App />);
+  it('starts with only the three fixed source devices on the canvas', async () => {
+    await act(async () => { render(<App />); });
     const fixedTypes = useStore.getState().circuit.devices.map(d => d.type);
     expect(fixedTypes).toEqual(['VCC', 'GND', 'CLOCK']);
   });

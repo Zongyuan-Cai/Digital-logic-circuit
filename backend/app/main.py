@@ -4,16 +4,23 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# Ensure the C++ build directory is on path for logic_sim imports
-_BUILD_DIR = os.path.join(
-    os.path.dirname(__file__), "..", "..", "build"
-)
-if os.path.isdir(_BUILD_DIR):
-    sys.path.insert(0, _BUILD_DIR)
+# Support both single-configuration Linux builds and native Windows .pyd builds.
+_PROJECT_DIR = Path(__file__).resolve().parents[2]
+_BUILD_DIRS = [
+    _PROJECT_DIR / "build" / "windows" / "python" if sys.platform == "win32"
+    else _PROJECT_DIR / "build" / "sim-core",
+    _PROJECT_DIR / "build",
+]
+if os.environ.get("LOGIC_SIM_BUILD_DIR"):
+    _BUILD_DIRS.insert(0, Path(os.environ["LOGIC_SIM_BUILD_DIR"]))
+for _build_dir in reversed(_BUILD_DIRS):
+    if _build_dir.is_dir():
+        sys.path.insert(0, str(_build_dir))
 
 
 app = FastAPI(
@@ -25,7 +32,7 @@ app = FastAPI(
 # CORS — allow frontend dev server
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
