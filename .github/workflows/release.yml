@@ -2,8 +2,13 @@ name: Publish Windows Release
 
 on:
   push:
+    branches:
+      - master
     tags:
       - 'v*'
+    paths:
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -14,6 +19,7 @@ concurrency:
 
 jobs:
   build:
+    if: startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/installer.yml
   publish:
     needs: build
@@ -35,6 +41,9 @@ jobs:
           test "$RELEASE_TAG" = "v$version"
           test -f "docs/releases/$RELEASE_TAG.md"
           test -f "dist/installers/LogicLab-$version-Windows-x64-Setup.exe"
+          # GitHub sanitizes asset names containing only non-ASCII characters.
+          cp dist/installers/安装包说明.md dist/installers/Installation-Guide.md
+          rm dist/installers/安装包说明.md
           cd dist/installers
           tr -d '\r' < SHA256SUMS.txt | sha256sum --check -
       - name: Publish installer, guide and verification files
@@ -52,3 +61,25 @@ jobs:
           fi
           gh release edit "$RELEASE_TAG" --draft=false --latest
           gh release view "$RELEASE_TAG" --json url --jq .url
+  repair-guide-name:
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore a readable name for an existing guide asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'from backend.app.runtime import VERSION; print(VERSION)')
+          if ! gh api "repos/$GH_REPO/releases/tags/v$version" > "$RUNNER_TEMP/release.json"; then
+            exit 0
+          fi
+          asset_id=$(python3 -c 'import json,sys; print(next((a["id"] for a in json.load(open(sys.argv[1]))["assets"] if a["name"] == "default.md"), ""))' "$RUNNER_TEMP/release.json")
+          if test -n "$asset_id"; then
+            gh api --method PATCH "repos/$GH_REPO/releases/assets/$asset_id" \
+              -f name=Installation-Guide.md -f label='安装包说明'
+          fi
