@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 from typing import Optional
 
@@ -16,9 +15,8 @@ class DeviceLibraryService:
     def __init__(self, library_dir: Optional[str] = None):
         if library_dir is None:
             # Default: project_root/device-library
-            library_dir = os.path.join(
-                os.path.dirname(__file__), "..", "..", "..", "device-library"
-            )
+            from ..runtime import resource_root
+            library_dir = resource_root() / "device-library"
         self._dir = Path(library_dir).resolve()
         self._devices: dict[str, DeviceDef] = {}
         self._index: Optional[DeviceLibraryIndex] = None

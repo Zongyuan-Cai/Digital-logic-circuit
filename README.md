@@ -6,6 +6,14 @@ An interactive circuit simulation platform for digital logic education. Build ci
 
 ---
 
+## Windows 安装包
+
+普通用户可直接安装 `LogicLab-1.0.0-Windows-x64-Setup.exe`，从开始菜单启动工作台，无需安装 Python、Node.js、C++ 编译工具或 WSL。
+
+安装包包含前端、后端运行环境、Windows 原生仿真核心、器件库和卸载程序。程序通过本机浏览器显示界面，工程保存在 `%LOCALAPPDATA%\LogicLab`，卸载保留工程数据。详细说明见 [安装包说明](docs/安装包说明.md)。
+
+开发者执行 `.\scripts\package-windows.ps1` 构建，产物位于 `dist/installers/`。也可以从 [Windows Installer 工作流](https://github.com/Zongyuan-Cai/Digital-logic-circuit/actions/workflows/installer.yml) 的成功运行页面下载 `LogicLab-Windows-x64-installer` Artifact；解压后运行其中的 `Setup.exe`。Artifact 保留 30 天，过期后可重新运行工作流。测试步骤见说明文档。
+
 ## 功能特性 · Features
 
 - **拖拽式电路编辑** — 从器件面板拖拽门电路、触发器、芯片到 SVG 画布，点击引脚连线，所见即所得

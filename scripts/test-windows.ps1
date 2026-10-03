@@ -11,7 +11,7 @@ function Assert-True([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw $Message }
 }
 try {
-    foreach ($file in @('start.ps1', 'scripts/windows-common.ps1', 'scripts/test-all.ps1', 'scripts/test-windows.ps1')) {
+    foreach ($file in @('start.ps1', 'scripts/windows-common.ps1', 'scripts/test-all.ps1', 'scripts/test-windows.ps1', 'scripts/package-windows.ps1', 'scripts/test-installer.ps1')) {
         $tokens = $null; $parseErrors = $null
         $null = [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $script:ProjectRoot $file), [ref]$tokens, [ref]$parseErrors)
         Assert-True ($parseErrors.Count -eq 0) "PowerShell parse error: $file"

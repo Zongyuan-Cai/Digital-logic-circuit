@@ -1,0 +1,2 @@
+# Packaging dependencies; backend runtime dependencies come from backend/requirements.txt.
+pyinstaller>=6.10,<7

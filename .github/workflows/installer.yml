@@ -1,0 +1,49 @@
+name: Windows Installer
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'sim-core/**'
+      - 'bindings/**'
+      - 'device-library/**'
+      - 'packaging/**'
+      - 'scripts/**'
+      - 'docs/安装包说明.md'
+      - '.github/workflows/installer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  installer:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install installer compiler
+        run: choco install innosetup --version=6.7.3 --yes --no-progress
+      - name: Build self-contained installer
+        run: .\scripts\package-windows.ps1 -Python (Get-Command python.exe).Source
+      - name: Install, exercise and uninstall the built application
+        run: .\scripts\test-installer.ps1 -Installer .\dist\installers\LogicLab-1.0.0-Windows-x64-Setup.exe
+      - name: Upload verified installer and guide
+        uses: actions/upload-artifact@v4
+        with:
+          name: LogicLab-Windows-x64-installer
+          path: dist/installers/
+          if-no-files-found: error
+          retention-days: 30

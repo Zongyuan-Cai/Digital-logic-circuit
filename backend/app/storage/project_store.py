@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from ..models.schemas import CircuitDef, ProjectData, ProjectMeta
+from ..runtime import data_root
 
 
 class ProjectStore:
@@ -17,9 +18,7 @@ class ProjectStore:
 
     def __init__(self, db_path: Optional[str] = None):
         if db_path is None:
-            db_path = os.path.join(
-                os.path.dirname(__file__), "..", "..", "..", "data", "projects.db"
-            )
+            db_path = str(data_root() / "projects.db")
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
         self._db_path = db_path
 

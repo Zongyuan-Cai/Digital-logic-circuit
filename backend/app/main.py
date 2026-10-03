@@ -8,6 +8,8 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from .runtime import VERSION, resource_root
 
 # Support both single-configuration Linux builds and native Windows .pyd builds.
 _PROJECT_DIR = Path(__file__).resolve().parents[2]
@@ -25,7 +27,7 @@ for _build_dir in reversed(_BUILD_DIRS):
 
 app = FastAPI(
     title="Digital Logic Circuit Simulator API",
-    version="1.0.0",
+    version=VERSION,
     description="Backend API for digital logic circuit simulation teaching system",
 )
 
@@ -51,7 +53,7 @@ async def health():
     from .services.simulator_service import SimulatorService
     return {
         "status": "ok",
-        "version": "1.0.0",
+        "version": VERSION,
         "sim_core_available": SimulatorService.is_available(),
     }
 
@@ -61,3 +63,8 @@ async def startup():
     print("[startup] Server started")
     from .services.simulator_service import SimulatorService
     print(f"[startup] Sim core: {'available' if SimulatorService.is_available() else 'NOT available'}")
+
+
+# Frozen distribution serves the built frontend from the same local origin.
+if getattr(sys, "frozen", False):
+    app.mount("/", StaticFiles(directory=resource_root() / "frontend" / "dist", html=True), name="frontend")

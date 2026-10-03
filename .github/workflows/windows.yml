@@ -7,7 +7,7 @@ on:
 
 jobs:
   windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     defaults:
       run:
         shell: powershell
@@ -44,3 +44,4 @@ jobs:
           name: windows-logs
           path: .logs/windows/
           if-no-files-found: ignore
+          include-hidden-files: true
