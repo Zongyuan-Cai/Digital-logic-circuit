@@ -203,7 +203,17 @@ function Start-ManagedService {
     $argumentLine = ($Arguments | ForEach-Object { ConvertTo-ProcessArgument $_ }) -join ' '
     $process = Start-Process -FilePath $Executable -ArgumentList $argumentLine -WorkingDirectory $WorkingDirectory -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $script:LogDir "$Name.log") -RedirectStandardError (Join-Path $script:LogDir "$Name.error.log")
     try {
-        @{ processId = $process.Id; startTicks = $process.StartTime.ToUniversalTime().Ticks.ToString(); executable = $process.Path; port = $Port; apiUrl = $env:LOGIC_LAB_API_URL } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $script:PidDir "$Name.json") -Encoding UTF8
+        # Start-Process can return before the image path is available on Windows.
+        # Take the identity from a fresh process snapshot, just as the reader does.
+        $deadline = [DateTime]::UtcNow.AddSeconds(5)
+        do {
+            if ($process.HasExited) { throw "$Name exited during startup. Check .logs\windows\$Name.error.log." }
+            $identity = Get-Process -Id $process.Id -ErrorAction Stop
+            if ($identity.Path) { break }
+            Start-Sleep -Milliseconds 50
+        } while ([DateTime]::UtcNow -lt $deadline)
+        if (-not $identity.Path) { throw "Could not read $Name process identity." }
+        @{ processId = $identity.Id; startTicks = $identity.StartTime.ToUniversalTime().Ticks.ToString(); executable = $identity.Path; port = $Port; apiUrl = $env:LOGIC_LAB_API_URL } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $script:PidDir "$Name.json") -Encoding UTF8
     } catch {
         if (-not $process.HasExited) { Stop-Process -InputObject $process -Force }
         throw
