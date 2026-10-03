@@ -1,0 +1,54 @@
+name: Publish Windows Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    uses: ./.github/workflows/installer.yml
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: LogicLab-Windows-x64-installer
+          path: dist/installers
+      - name: Verify version and installer checksum
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'from backend.app.runtime import VERSION; print(VERSION)')
+          test "$RELEASE_TAG" = "v$version"
+          test -f "docs/releases/$RELEASE_TAG.md"
+          test -f "dist/installers/LogicLab-$version-Windows-x64-Setup.exe"
+          cd dist/installers
+          tr -d '\r' < SHA256SUMS.txt | sha256sum --check -
+      - name: Publish installer, guide and verification files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" --json isDraft > "$RUNNER_TEMP/release.json" 2>/dev/null; then
+            test "$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["isDraft"])' "$RUNNER_TEMP/release.json")" = True
+            gh release upload "$RELEASE_TAG" dist/installers/* --clobber
+          else
+            gh release create "$RELEASE_TAG" dist/installers/* --verify-tag --draft \
+              --title "LogicLab $RELEASE_TAG · Windows x64" --notes-file "docs/releases/$RELEASE_TAG.md"
+          fi
+          gh release edit "$RELEASE_TAG" --draft=false --latest
+          gh release view "$RELEASE_TAG" --json url --jq .url
